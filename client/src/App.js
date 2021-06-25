@@ -1,4 +1,3 @@
-import './App.css';
 import IDE from './components/IDE';
 import {
   BrowserRouter as Router,
