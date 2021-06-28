@@ -9,7 +9,7 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const io = require('socket.io')(3001, {
+const io = require('socket.io')(PROCESS.ENV.PORT || 3001, {
     cors: {
         origin: 'http://localhost:3000',
     }

@@ -1,4 +1,7 @@
 import IDE from './components/IDE';
+import CPP from './components/CPP';
+import JAVA from './components/JAVA';
+import Python from './components/Python';
 import {
   BrowserRouter as Router,
   Switch,
@@ -14,7 +17,7 @@ function App() {
           <Redirect to = {`/${uuidV4()}`} />
         </Route>
      
-        <Route path="/:id" component={IDE} />
+        <Route path="/:id" component={Python} />
       </Switch>
     </Router>
   );

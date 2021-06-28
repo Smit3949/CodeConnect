@@ -1,5 +1,4 @@
 import React,{ useEffect, useState, useRef } from 'react';
-import "quill/dist/quill.snow.css";
 import { io } from 'socket.io-client';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
