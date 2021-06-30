@@ -17,7 +17,7 @@ function App() {
           <Redirect to = {`/${uuidV4()}`} />
         </Route>
      
-        <Route path="/:id" component={Python} />
+        <Route path="/:id" component={IDE} />
       </Switch>
     </Router>
   );

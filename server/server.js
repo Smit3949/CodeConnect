@@ -2,14 +2,14 @@ require('dotenv').config({ path: '.env' });
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const Pusher = require('pusher');
-
 const app = express();
+// const server = require('http').Server(app);
+const { v4: uuidV4 } = require('uuid');
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const io = require('socket.io')(PROCESS.ENV.PORT || 3001, {
+const io = require('socket.io')(3001, {
     cors: {
         origin: 'http://localhost:3000',
     }
@@ -29,6 +29,7 @@ mongoose.connect('mongodb+srv://smit:smit@cluster0.haxvy.mongodb.net/Docs?retryW
 .catch((error) => console.error(error));
 
 
+
 io.on('connection', (socket) =>  {
     socket.on('get-document', async (DocId) => {
 
@@ -46,7 +47,7 @@ io.on('connection', (socket) =>  {
 
 
         socket.on('save-document', async (data) => {
-            Doc.findByIdAndUpdate({'_id': DocId}, { 'html': data.html, 'css': data.css, 'js': data.js }).then((d) => {
+            Doc.findByIdAndUpdate({'_id': DocId}, { 'html': data.html, 'css': data.css, 'js': data.js, 'python': data.python, 'cpp': data.cpp, 'java': data.java}).then((d) => {
                 console.log(d);
             })  
             .catch(err => { 
@@ -65,5 +66,7 @@ var findOrCreateDocument = async (id) => {
     }
     const document = await Doc.findById(id);
     if(document) return document;
-    return await Doc.create({_id: id, html:"",css:"",js:""}); 
+    return await Doc.create({_id: id, html:"",css:"",js:"",python:"",java:"",cpp:""}); 
 };
+
+// app.listen(3001, () => {console.log('3001');})
