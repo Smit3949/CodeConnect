@@ -26,8 +26,6 @@ export default function Python({}) {
 
     useEffect(() => {
         if(socket == null) return;
-        
-
         socket.once('load-document', (data) => {
             console.log(data);
             setpython(data.python);
@@ -82,6 +80,7 @@ export default function Python({}) {
                 />
               </div>
               </section>
+              <div id="video-grid"></div>
         </div>
     )
 }

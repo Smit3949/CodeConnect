@@ -79,6 +79,7 @@ export default function JAVA() {
                 />
               </div>
               </section>
+              <div id="video-grid"></div>
         </div>
     )
 }
