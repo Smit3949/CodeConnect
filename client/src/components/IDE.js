@@ -50,7 +50,7 @@ export default function IDE({}) {
         socket.emit('get-document', DocId);
 
     }, [socket, DocId]);
-
+      
     
     useEffect(() => {   
         if(socket === null) return;
