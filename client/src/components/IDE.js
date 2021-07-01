@@ -8,6 +8,7 @@ import 'codemirror/mode/css/css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/clike/clike';
 import { useParams } from 'react-router';
+import Peer from 'peerjs';
 
 
 export default function IDE({}) {
@@ -19,60 +20,7 @@ export default function IDE({}) {
     const [cpp, setcpp] = useState(''); 
     const [java, setjava] = useState('');  
     const [python, setpython] = useState(''); 
-    const [selected, setSelected] = useState('HCJ');    
-    const [editor,setEditor] = useState(
-    <section className="playground">
-      <div className="code-editor html-code">
-        <div className="editor-header">HTML</div>
-        <CodeMirror
-          value={html}
-          options={{
-            mode: 'htmlmixed',
-            theme: 'material',
-            lineNumbers: true,
-            scrollbarStyle: null,
-            lineWrapping: true,
-          }}
-          onBeforeChange={(editor, data, html) => {
-            setHtml(html);
-          }}
-        />
-      </div>
-      <div className="code-editor css-code">
-        <div className="editor-header">CSS</div>
-        <CodeMirror
-          value={css}
-          options={{
-            mode: 'css',
-            theme: 'material',
-            lineNumbers: true,
-            scrollbarStyle: null,
-            lineWrapping: true,
-          }}
-          onBeforeChange={(editor, data, css) => {
-            setCss(css);
-          }}
-        />
-      </div>
-      <div className="code-editor js-code">
-        <div className="editor-header">JS</div>
-        <CodeMirror
-          value={js}
-          options={{
-            mode: 'javascript',
-            theme: 'material',
-            lineNumbers: true,
-            scrollbarStyle: null,
-            lineWrapping: true,
-          }}
-          onBeforeChange={(editor, data, js) => {
-            setJs(js);
-          }}
-        />
-      </div>
-    </section>);
-
-
+    const [selected, setSelected] = useState('JAVA');    
     const outputRef = useRef(null);
     
 
@@ -103,7 +51,7 @@ export default function IDE({}) {
         socket.emit('get-document', DocId);
 
     }, [socket, DocId]);
-
+      
     
     useEffect(() => {   
         if(socket === null) return;
@@ -136,7 +84,6 @@ export default function IDE({}) {
     }, [socket,html,css,js,cpp,java,python]);
 
     const Resultcode = () => {
-        console.log(html);
         const timeout = setTimeout(() => {
             const DOC = outputRef.current.contentDocument;
             const DOC_CON = `
@@ -181,10 +128,16 @@ export default function IDE({}) {
 
 
     useEffect(() => {
-      if(selected === 'HCJ'){
-        setEditor((prevSelected) => {
-          prevSelected = 
-          <section className="playground">
+      if(socket == null) return;
+      socket.emit('join-room',DocId, 1001);
+
+      socket.on('user-connected', (userId) => {
+        console.log(userId);
+      });
+    }, [socket, DocId])
+    return (
+        <div id = "editor">
+            { selected === 'HCJ' && <section className="playground">
             <div className="code-editor html-code">
               <div className="editor-header">HTML</div>
               <CodeMirror
@@ -233,36 +186,31 @@ export default function IDE({}) {
                 }}
               />
             </div>
-          </section>;
-        });
-      }
-      else if(selected === 'CPP'){
-        setEditor((prevEditor) => {
-          prevEditor = 
-          <section className="playground">
-            <div className="code-editor-cpp cpp-code">
-              <div className="editor-header">CPP</div>
-              <CodeMirror
-                value={cpp}
-                options={{
-                  mode: "text/x-csrc",
-                  theme: 'material',
-                  lineNumbers: true,
-                  scrollbarStyle: null,
-                  lineWrapping: true,
-                }}
-                onBeforeChange={(editor, data, cpp) => {
-                  setcpp(cpp);
-                }}
-              />
-            </div>
-          </section>;
-        });
-      }
-      else if(selected === 'JAVA'){
-        setEditor((prevEditor) => {
-          prevEditor = 
-          <section className="playground">
+          </section>}
+          {
+            selected==='CPP' && 
+            <section className="playground">
+              <div className="code-editor-cpp cpp-code">
+                <div className="editor-header">CPP</div>
+                <CodeMirror
+                  value={cpp}
+                  options={{
+                    mode: "text/x-csrc",
+                    theme: 'material',
+                    lineNumbers: true,
+                    scrollbarStyle: null,
+                    lineWrapping: true,
+                  }}
+                  onBeforeChange={(editor, data, cpp) => {
+                    setcpp(cpp);
+                  }}
+                />
+              </div>
+            </section>
+          }
+          {
+            selected === 'JAVA' && 
+            <section className="playground">
             <div className="code-editor-java java-code">
               <div className="editor-header">java</div>
               <CodeMirror
@@ -279,45 +227,32 @@ export default function IDE({}) {
                 }}
               />
             </div>
-          </section>;
-        });
-      }
-      else if(selected === 'PYTHON'){
-        setEditor((prevEditor) => {
-          prevEditor = 
-          <section className="playground">
-          <div className="code-editor-java java-code">
-            <div className="editor-header">java</div>
-            <CodeMirror
-              value={java}
-              options={{
-                mode: "text/x-java",
-                theme: 'material',
-                lineNumbers: true,
-                scrollbarStyle: null,
-                lineWrapping: true,
-              }}
-              onBeforeChange={(editor, data, java) => {
-                setjava(java);
-              }}
-            />
-          </div>
-        </section>;
-        });
-      }
-    }, [selected])
-    
-    const HTML = <div> Hello  </div>;
-    const Component = () => (
-      <div>{editor}</div>
-    );
-    return (
-        <div id = "editor">
-            {editor}
-
-            <section className="result">
-              <iframe title="result" className="iframe" ref={outputRef} />
+          </section>
+          }
+          {
+            selected === 'PYTHON' &&
+            <section className="playground">
+              <div className="code-editor-java java-code">
+                <div className="editor-header">java</div>
+                <CodeMirror
+                  value={java}
+                  options={{
+                    mode: "text/x-java",
+                    theme: 'material',
+                    lineNumbers: true,
+                    scrollbarStyle: null,
+                    lineWrapping: true,
+                  }}
+                  onBeforeChange={(editor, data, java) => {
+                    setjava(java);
+                  }}
+                />
+              </div>
             </section>
+          }
+          <section className="result">
+            <iframe title="result" className="iframe" ref={outputRef} />
+          </section>  
             <div id="video-grid"></div>
         </div>
     )

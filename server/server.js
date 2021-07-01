@@ -3,13 +3,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
-// const server = require('http').Server(app);
+const server = require('http').Server(app);
 const { v4: uuidV4 } = require('uuid');
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const io = require('socket.io')(3001, {
+const io = require('socket.io')(server , {
     cors: {
         origin: 'http://localhost:3000',
     }
@@ -25,7 +25,7 @@ mongoose.connect('mongodb+srv://smit:smit@cluster0.haxvy.mongodb.net/Docs?retryW
     useFindAndModify: false,
     useCreateIndex: true
 })
-.then(()=> console.log('connect'))
+.then(()=> console.log('connected to mongodb'))
 .catch((error) => console.error(error));
 
 
@@ -55,6 +55,12 @@ io.on('connection', (socket) =>  {
             })
         })
     });
+
+
+    socket.on('join-room', (roomId, userId) =>{
+        socket.join(roomId);
+        socket.to(roomId).emit('user-connected', userId);
+    });
     console.log("connected");
 });
 
@@ -69,4 +75,4 @@ var findOrCreateDocument = async (id) => {
     return await Doc.create({_id: id, html:"",css:"",js:"",python:"",java:"",cpp:""}); 
 };
 
-// app.listen(3001, () => {console.log('3001');})
+server.listen(3001, () => {console.log('3001');})
