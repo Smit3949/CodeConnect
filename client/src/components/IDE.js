@@ -8,6 +8,7 @@ import 'codemirror/mode/css/css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/clike/clike';
 import { useParams } from 'react-router';
+import Peer from 'peerjs';
 
 
 export default function IDE({}) {
@@ -125,6 +126,15 @@ export default function IDE({}) {
         Resultcode();
     }, [html, css, js, cpp,java,python]);
 
+
+    useEffect(() => {
+      if(socket == null) return;
+      socket.emit('join-room',DocId, 1001);
+
+      socket.on('user-connected', (userId) => {
+        console.log(userId);
+      });
+    }, [socket, DocId])
     return (
         <div id = "editor">
             { selected === 'HCJ' && <section className="playground">
@@ -240,9 +250,9 @@ export default function IDE({}) {
               </div>
             </section>
           }
-            <section className="result">
-              <iframe title="result" className="iframe" ref={outputRef} />
-            </section>
+          <section className="result">
+            <iframe title="result" className="iframe" ref={outputRef} />
+          </section>  
             <div id="video-grid"></div>
         </div>
     )
