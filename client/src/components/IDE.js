@@ -20,13 +20,25 @@ export default function IDE({}) {
     const [cpp, setcpp] = useState(''); 
     const [java, setjava] = useState('');  
     const [python, setpython] = useState(''); 
-    const [selected, setSelected] = useState('JAVA');    
+    const [selected, setSelected] = useState('JAVA');   
+    const [peer, setPeer] = useState(null); 
     const outputRef = useRef(null);
+    const videoGrid = document.getElementById('video-grid');
+    const myVideo = document.createElement('video');
+    myVideo.muted = true;
+
     
 
     useEffect(() => {
         var TempSocket = io('http://localhost:3001');
         setSocket(TempSocket);
+
+        const peer = new Peer(undefined, {
+          host: 'localhost',
+          port: 9000,
+          path: '/'
+        });
+        setPeer(peer);
 
         return () => {
             TempSocket.disconnect();
@@ -81,7 +93,7 @@ export default function IDE({}) {
         };
         socket.emit('save-document', data);
         socket.emit('changes', data);
-    }, [socket,html,css,js,cpp,java,python]);
+    }, [socket, html,css,js,cpp,java,python]);
 
     const Resultcode = () => {
         const timeout = setTimeout(() => {
@@ -127,14 +139,54 @@ export default function IDE({}) {
     }, [html, css, js, cpp,java,python]);
 
 
+    function addVideoStream(video, stream) {
+      video.srcObject = stream
+      video.addEventListener('loadedmetadata', () => {
+        video.play()
+      })
+      videoGrid.append(video)
+    }
+
     useEffect(() => {
       if(socket == null) return;
-      socket.emit('join-room',DocId, 1001);
 
-      socket.on('user-connected', (userId) => {
-        console.log(userId);
+      navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      }).then(stream => {
+        addVideoStream(myVideo, stream)
+
+        peer.on('call', cal => {
+          cal.answer(stream);
+          const video = document.createElement('video');
+
+          cal.on('stream', (anotherUserVideoStream) => {
+            addVideoStream(video, anotherUserVideoStream);
+          });
+        });
+
+
+        socket.on('user-connected', (userId) => {
+          const call = peer.call(userId, stream);
+          const video = document.createElement('video');
+          call.on('stream', (anotherUserVideoStream) => {
+            addVideoStream(video, anotherUserVideoStream);
+          });
+
+          call.on('close', () => {
+            video.remove();
+          }); 
+        });
+
       });
-    }, [socket, DocId])
+
+
+
+      peer.on('open', (id) => {
+        socket.emit('join-room',DocId, id);
+      }); 
+      
+    }, [socket, DocId, peer])
     return (
         <div id = "editor">
             { selected === 'HCJ' && <section className="playground">
@@ -251,9 +303,10 @@ export default function IDE({}) {
             </section>
           }
           <section className="result">
+            <div id="video-grid"></div>
             <iframe title="result" className="iframe" ref={outputRef} />
           </section>  
-            <div id="video-grid"></div>
+            
         </div>
     )
 }

@@ -5,6 +5,7 @@ const cors = require('cors');
 const app = express();
 const server = require('http').Server(app);
 const { v4: uuidV4 } = require('uuid');
+const { PeerServer } = require('peer');
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -14,6 +15,10 @@ const io = require('socket.io')(server , {
         origin: 'http://localhost:3000',
     }
 });
+
+const peerServer = PeerServer({ port: 9000, path: '/' });
+
+peerServer.on('connection', (client) => { console.log(client.id);});
 
 const mongoose = require('mongoose');
 const Doc = require('./models/Doc');
