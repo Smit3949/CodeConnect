@@ -7,6 +7,7 @@ import 'codemirror/mode/htmlmixed/htmlmixed';
 import 'codemirror/mode/css/css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/clike/clike';
+import 'codemirror/mode/python/python';
 import { useParams } from 'react-router';
 import Peer from 'peerjs';
 
@@ -20,8 +21,10 @@ export default function IDE({}) {
     const [cpp, setcpp] = useState(''); 
     const [java, setjava] = useState('');  
     const [python, setpython] = useState(''); 
-    const [selected, setSelected] = useState('JAVA');   
+    const [selected, setSelected] = useState('PYTHON');   
     const [peer, setPeer] = useState(null); 
+    const [input, setInput] = useState('');
+    const [output, setOutput] = useState('');
     const outputRef = useRef(null);
     const videoGrid = document.getElementById('video-grid');
     const myVideo = document.createElement('video');
@@ -145,10 +148,10 @@ export default function IDE({}) {
         video.play()
       })
       videoGrid.append(video)
-    }
+    };
 
     useEffect(() => {
-      if(socket == null) return;
+      if (socket == null) return;
 
       navigator.mediaDevices.getUserMedia({
         video: true,
@@ -175,7 +178,7 @@ export default function IDE({}) {
 
           call.on('close', () => {
             video.remove();
-          }); 
+          });
         });
 
         socket.on('user-disconnected', (userId) => {
@@ -187,10 +190,95 @@ export default function IDE({}) {
 
 
       peer.on('open', (id) => {
-        socket.emit('join-room',DocId, id);
-      }); 
-      
-    }, [socket, DocId, peer])
+        socket.emit('join-room', DocId, id);
+      });
+        
+    }, [socket, DocId, peer]);
+
+  
+  const RunCode = () => {
+    var lang = selected;
+    console.log(lang, input);
+    var backend_url = 'https://api.hackerearth.com/v4/partner/code-evaluation/submissions/';
+
+    var data = {
+      "lang": lang,
+      "source": python,
+      "input": input,
+      "memory_limit": 243232,
+      "time_limit": 5,
+      "context": "{'id': 213121}",
+      "callback": "https://client.com/callback/"
+    }
+
+
+    var status;
+    fetch(backend_url, {
+            method: 'POST', 
+            mode: 'cors', 
+            cache: 'no-cache', 
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'client-secret': '0b281b4a748997e754b1c8afd4dbfb64fb2835ea'
+            },
+            redirect: 'follow', 
+            referrerPolicy: 'no-referrer', 
+            body: JSON.stringify(data)
+    })
+    .then((res) => res.json())
+    .then((data) => 
+    {
+      status = data.status_update_url;
+      console.log(data);
+
+      fetch(status, {
+            method: 'GET', 
+            mode: 'cors', 
+            cache: 'no-cache', 
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'client-secret': '0b281b4a748997e754b1c8afd4dbfb64fb2835ea'
+            },
+            redirect: 'follow', 
+            referrerPolicy: 'no-referrer', 
+      })
+      .then((res) => res.json())
+      .then((data) => 
+      {
+        console.log(data);
+        fetch(status, {
+            method: 'GET', 
+            mode: 'cors', 
+            cache: 'no-cache', 
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'client-secret': '0b281b4a748997e754b1c8afd4dbfb64fb2835ea'
+            },
+            redirect: 'follow', 
+            referrerPolicy: 'no-referrer', 
+        })
+        .then((res) => res.json())
+        .then((data) => 
+        {
+          console.log(data.result.run_status.output);
+          var goToOutput = data.result.run_status.output;
+          
+        })
+        .catch(e => console.log(e));
+      })
+      .catch(e => console.log(e));
+    })
+    .catch(e => console.log(e));
+    
+
+    
+    
+    
+    
+  };
     return (
         <div id = "editor">
             { selected === 'HCJ' && <section className="playground">
@@ -289,18 +377,18 @@ export default function IDE({}) {
             selected === 'PYTHON' &&
             <section className="playground">
               <div className="code-editor-java java-code">
-                <div className="editor-header">java</div>
+                <div className="editor-header">python</div>
                 <CodeMirror
-                  value={java}
+                  value={python}
                   options={{
-                    mode: "text/x-java",
+                    mode: "python",
                     theme: 'material',
                     lineNumbers: true,
                     scrollbarStyle: null,
                     lineWrapping: true,
                   }}
-                  onBeforeChange={(editor, data, java) => {
-                    setjava(java);
+                  onBeforeChange={(editor, data, python) => {
+                    setpython(python);
                   }}
                 />
               </div>
@@ -308,9 +396,16 @@ export default function IDE({}) {
           }
           <section className="result">
             <div id="video-grid"></div>
-            <iframe title="result" className="iframe" ref={outputRef} />
-          </section>  
+            <textarea onChange={(e) => { setInput(e.target.value) }} value={ input } rows="4" cols="50">
+            </textarea>
             
+            <textarea onChange={(e) => { setOutput(e.target.value) }} value={ output } rows="4" cols="50">
+            </textarea>
+            <button onClick={ RunCode }>RUN</button>
+            <iframe title="result" className="iframe" ref={outputRef} />
+            
+          </section>  
+       
         </div>
     )
 }
