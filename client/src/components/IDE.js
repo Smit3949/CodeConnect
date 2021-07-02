@@ -178,6 +178,10 @@ export default function IDE({}) {
           }); 
         });
 
+        socket.on('user-disconnected', (userId) => {
+          console.log('userId');
+        });
+
       });
 
 

@@ -33,11 +33,8 @@ mongoose.connect('mongodb+srv://smit:smit@cluster0.haxvy.mongodb.net/Docs?retryW
 .then(()=> console.log('connected to mongodb'))
 .catch((error) => console.error(error));
 
-
-
 io.on('connection', (socket) =>  {
     socket.on('get-document', async (DocId) => {
-
         const doc = await findOrCreateDocument(DocId);
 
         socket.join(DocId);
@@ -65,6 +62,10 @@ io.on('connection', (socket) =>  {
     socket.on('join-room', (roomId, userId) =>{
         socket.join(roomId);
         socket.to(roomId).emit('user-connected', userId);
+
+        socket.on('disconnect', () => {
+            socket.to(roomId).emit('user-disconncted', userId);  
+        })
     });
     console.log("connected");
 });
