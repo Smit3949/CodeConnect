@@ -25,9 +25,10 @@ export default function IDE({}) {
     const [peer, setPeer] = useState(null); 
     const [input, setInput] = useState('');
     const [output, setOutput] = useState('');
-    const outputRef = useRef(null);
     const videoGrid = document.getElementById('video-grid');
     const myVideo = document.createElement('video');
+    const [video, setVideo] = useState(true);
+    const peers = {};
     myVideo.muted = true;
 
     
@@ -41,8 +42,8 @@ export default function IDE({}) {
           port: 9000,
           path: '/'
         });
+      
         setPeer(peer);
-
         return () => {
             TempSocket.disconnect();
         };
@@ -51,8 +52,6 @@ export default function IDE({}) {
 
     useEffect(() => {
         if(socket == null) return;
-        
-
         socket.once('load-document', (data) => {
             console.log(data);
             setHtml(data.html);
@@ -62,9 +61,7 @@ export default function IDE({}) {
             setjava(data.java);
             setpython(data.python);
         });
-
         socket.emit('get-document', DocId);
-
     }, [socket, DocId]);
       
     
@@ -98,60 +95,33 @@ export default function IDE({}) {
         socket.emit('changes', data);
     }, [socket, html,css,js,cpp,java,python]);
 
-    const Resultcode = () => {
-        const timeout = setTimeout(() => {
-            const DOC = outputRef.current.contentDocument;
-            const DOC_CON = `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                <title>Document</title>
-                <style>
-                    ${css}
-                </style>
-                </head>
-                <body>
-                ${html}
-        
-                <script type="text/javascript">
-                    ${js}
-                </script>
-                </body>
-                </html>
-            `;
-            if(DOC === 'undefined') return;
-            else{
-                DOC.open();
-                DOC.write(DOC_CON);
-                DOC.close();
-            }
-            
-        }, 1000); 
-
-        return () => {
-            clearTimeout(timeout);
-        }
-       
-    };
-
-    useEffect(() => {
-        Resultcode();
-    }, [html, css, js, cpp,java,python]);
-
-
     function addVideoStream(video, stream) {
       video.srcObject = stream
       video.addEventListener('loadedmetadata', () => {
         video.play()
       })
-      videoGrid.append(video)
+        videoGrid.append(video)
+    };
+  
+    function connectToNewUser(userId, stream) {
+      const call = peer.call(userId, stream)
+      const video = document.createElement('video')
+      call.on('stream', userVideoStream => {
+        addVideoStream(video, userVideoStream)
+      })
+      call.on('close', () => {
+        video.remove()
+      })
+
+      peers[userId] = call
     };
 
     useEffect(() => {
+    
       if (socket == null) return;
+
+      const myVideo = document.createElement('video')
+      myVideo.muted = true
 
       navigator.mediaDevices.getUserMedia({
         video: true,
@@ -159,41 +129,28 @@ export default function IDE({}) {
       }).then(stream => {
         addVideoStream(myVideo, stream)
 
-        peer.on('call', cal => {
-          cal.answer(stream);
-          const video = document.createElement('video');
+        peer.on('call', call => {
+          call.answer(stream)
+          const video = document.createElement('video')
+          call.on('stream', userVideoStream => {
+            addVideoStream(video, userVideoStream)
+          })
+        })
 
-          cal.on('stream', (anotherUserVideoStream) => {
-            addVideoStream(video, anotherUserVideoStream);
-          });
-        });
-
-
-        socket.on('user-connected', (userId) => {
-          const call = peer.call(userId, stream);
-          const video = document.createElement('video');
-          call.on('stream', (anotherUserVideoStream) => {
-            addVideoStream(video, anotherUserVideoStream);
-          });
-
-          call.on('close', () => {
-            video.remove();
-          });
-        });
-
-        socket.on('user-disconnected', (userId) => {
-          console.log('userId');
-        });
-
+        socket.on('user-connected', userId => {
+          connectToNewUser(userId, stream)
+        })
       });
 
+      socket.on('user-disconnected', userId => {
+        if (peers[userId]) peers[userId].close()
+      });
 
-
-      peer.on('open', (id) => {
-        socket.emit('join-room', DocId, id);
+      peer.on('open', id => {
+        socket.emit('join-room', DocId, id)
       });
         
-    }, [socket, DocId, peer]);
+    }, [socket,peer,video]);
 
   
   const RunCode = () => {
@@ -280,61 +237,11 @@ export default function IDE({}) {
     
   };
     return (
-        <div id = "editor">
-            { selected === 'HCJ' && <section className="playground">
-            <div className="code-editor html-code">
-              <div className="editor-header">HTML</div>
-              <CodeMirror
-                value={html}
-                options={{
-                  mode: 'htmlmixed',
-                  theme: 'material',
-                  lineNumbers: true,
-                  scrollbarStyle: null,
-                  lineWrapping: true,
-                }}
-                onBeforeChange={(editor, data, html) => {
-                  setHtml(html);
-                }}
-              />
-            </div>
-            <div className="code-editor css-code">
-              <div className="editor-header">CSS</div>
-              <CodeMirror
-                value={css}
-                options={{
-                  mode: 'css',
-                  theme: 'material',
-                  lineNumbers: true,
-                  scrollbarStyle: null,
-                  lineWrapping: true,
-                }}
-                onBeforeChange={(editor, data, css) => {
-                  setCss(css);
-                }}
-              />
-            </div>
-            <div className="code-editor js-code">
-              <div className="editor-header">JS</div>
-              <CodeMirror
-                value={js}
-                options={{
-                  mode: 'javascript',
-                  theme: 'material',
-                  lineNumbers: true,
-                  scrollbarStyle: null,
-                  lineWrapping: true,
-                }}
-                onBeforeChange={(editor, data, js) => {
-                  setJs(js);
-                }}
-              />
-            </div>
-          </section>}
+        <div id = "editor">  
           {
             selected==='CPP' && 
             <section className="playground">
-              <div className="code-editor-cpp cpp-code">
+              <div className="code-editor">
                 <div className="editor-header">CPP</div>
                 <CodeMirror
                   value={cpp}
@@ -355,7 +262,7 @@ export default function IDE({}) {
           {
             selected === 'JAVA' && 
             <section className="playground">
-            <div className="code-editor-java java-code">
+            <div className="code-editor">
               <div className="editor-header">java</div>
               <CodeMirror
                 value={java}
@@ -376,9 +283,9 @@ export default function IDE({}) {
           {
             selected === 'PYTHON' &&
             <section className="playground">
-              <div className="code-editor-java java-code">
+              <div className="code-editor">
                 <div className="editor-header">python</div>
-                <CodeMirror
+                <CodeMirror className="codemirror"
                   value={python}
                   options={{
                     mode: "python",
@@ -401,8 +308,8 @@ export default function IDE({}) {
             
             <textarea onChange={(e) => { setOutput(e.target.value) }} value={ output } rows="4" cols="50">
             </textarea>
-            <button onClick={ RunCode }>RUN</button>
-            <iframe title="result" className="iframe" ref={outputRef} />
+           <button onClick={RunCode}>RUN</button>
+          <button onClick={() => { setVideo(!video)}}> Video </button>
             
           </section>  
        
