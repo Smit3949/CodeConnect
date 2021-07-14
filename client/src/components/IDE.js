@@ -31,6 +31,8 @@ export default function IDE({ }) {
   const videoGrid = document.getElementById('video-grid');
   const myVideo = document.createElement('video');
   myVideo.muted = true;
+  const [myStream, setMystream] = useState(null);
+  const peers = {};
 
 
 
@@ -159,8 +161,8 @@ export default function IDE({ }) {
       video: true,
       audio: true
     }).then(stream => {
-      addVideoStream(myVideo, stream)
-
+      addVideoStream(myVideo, stream);
+      setMystream(stream);
       peer.on('call', cal => {
         cal.answer(stream);
         const video = document.createElement('video');
@@ -181,15 +183,15 @@ export default function IDE({ }) {
         call.on('close', () => {
           video.remove();
         });
+        peers[userId] = call;
       });
 
-      socket.on('user-disconnected', (userId) => {
-        console.log('userId');
-      });
 
     });
 
-
+    socket.on('user-disconnected', userId => {
+      if (peers[userId]) peers[userId].close()
+    });
 
     peer.on('open', (id) => {
       socket.emit('join-room', DocId, id);
@@ -197,6 +199,15 @@ export default function IDE({ }) {
 
   }, [socket, DocId, peer]);
 
+  const muteMic = () => {
+    console.log("mute")
+    myStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
+  }
+
+  const muteCam = () => {
+    console.log("cam off")
+    myStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
+  }
 
   const RunCode = () => {
     var lang = selected;
@@ -408,6 +419,8 @@ export default function IDE({ }) {
             <textarea onChange={(e) => { setOutput(e.target.value) }} value={output} rows="4" cols="50">
             </textarea>
             <button onClick={RunCode}>RUN</button>
+            <button onClick = {muteMic}>Mute</button>
+            <button onClick = {muteCam}>Video</button>
             <iframe title="result" className="iframe" ref={outputRef} />
 
           </section>
