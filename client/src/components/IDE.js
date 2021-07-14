@@ -200,12 +200,10 @@ export default function IDE({ }) {
   }, [socket, DocId, peer]);
 
   const muteMic = () => {
-    console.log("mute")
     myStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
   }
 
   const muteCam = () => {
-    console.log("cam off")
     myStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
   }
 
