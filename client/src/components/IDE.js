@@ -11,6 +11,7 @@ import 'codemirror/mode/python/python';
 import { useParams } from 'react-router';
 import Peer from 'peerjs';
 import VideoTile from './VideoTile';
+import ResizablePanels from './Resizable';
 
 
 export default function IDE({ }) {
@@ -278,132 +279,140 @@ export default function IDE({ }) {
 
   };
   return (
-    <div id="editor">
-      {selected === 'HCJ' && <section className="playground">
-        <div className="code-editor html-code">
-          <div className="editor-header">HTML</div>
-          <CodeMirror
-            value={html}
-            options={{
-              mode: 'htmlmixed',
-              theme: 'material',
-              lineNumbers: true,
-              scrollbarStyle: null,
-              lineWrapping: true,
-            }}
-            onBeforeChange={(editor, data, html) => {
-              setHtml(html);
-            }}
-          />
+    <div id="editor" className="h-screen">
+      <ResizablePanels>
+        <div className="h-full">
+          {selected === 'HCJ' &&
+            <section className="playground h-full">
+              <div className="code-editor html-code">
+                <div className="editor-header">HTML</div>
+                <CodeMirror
+                  value={html}
+                  options={{
+                    mode: 'htmlmixed',
+                    theme: 'material',
+                    lineNumbers: true,
+                    scrollbarStyle: null,
+                    lineWrapping: true,
+                  }}
+                  onBeforeChange={(editor, data, html) => {
+                    setHtml(html);
+                  }}
+                />
+              </div>
+              <div className="code-editor css-code">
+                <div className="editor-header">CSS</div>
+                <CodeMirror
+                  value={css}
+                  options={{
+                    mode: 'css',
+                    theme: 'material',
+                    lineNumbers: true,
+                    scrollbarStyle: null,
+                    lineWrapping: true,
+                  }}
+                  onBeforeChange={(editor, data, css) => {
+                    setCss(css);
+                  }}
+                />
+              </div>
+              <div className="code-editor js-code">
+                <div className="editor-header">JS</div>
+                <CodeMirror
+                  value={js}
+                  options={{
+                    mode: 'javascript',
+                    theme: 'material',
+                    lineNumbers: true,
+                    scrollbarStyle: null,
+                    lineWrapping: true,
+                  }}
+                  onBeforeChange={(editor, data, js) => {
+                    setJs(js);
+                  }}
+                />
+              </div>
+            </section>
+          }
+          {
+            selected === 'CPP' &&
+            <section className="playground h-full">
+              <div className="code-editor-cpp cpp-code">
+                <div className="editor-header">CPP</div>
+                <CodeMirror
+                  value={cpp}
+                  options={{
+                    mode: "text/x-csrc",
+                    theme: 'material',
+                    lineNumbers: true,
+                    scrollbarStyle: null,
+                    lineWrapping: true,
+                  }}
+                  onBeforeChange={(editor, data, cpp) => {
+                    setcpp(cpp);
+                  }}
+                />
+              </div>
+            </section>
+          }
+          {
+            selected === 'JAVA' &&
+            <section className="playground h-full">
+              <div className="code-editor-java java-code">
+                <div className="editor-header">java</div>
+                <CodeMirror
+                  value={java}
+                  options={{
+                    mode: "text/x-java",
+                    theme: 'material',
+                    lineNumbers: true,
+                    scrollbarStyle: null,
+                    lineWrapping: true,
+                  }}
+                  onBeforeChange={(editor, data, java) => {
+                    setjava(java);
+                  }}
+                />
+              </div>
+            </section>
+          }
+          {
+            selected === 'PYTHON' &&
+            <section className="playground h-full">
+              <div className="code-editor-java flex flex-col h-full mb-5 java-code">
+                <div className="editor-header">python</div>
+                <CodeMirror
+                  value={python}
+                  className="flex-grow"
+                  options={{
+                    mode: "python",
+                    theme: 'material',
+                    lineNumbers: true,
+                    scrollbarStyle: null,
+                    lineWrapping: true,
+                  }}
+                  onBeforeChange={(editor, data, python) => {
+                    setpython(python);
+                  }}
+                />
+              </div>
+            </section>
+          }
         </div>
-        <div className="code-editor css-code">
-          <div className="editor-header">CSS</div>
-          <CodeMirror
-            value={css}
-            options={{
-              mode: 'css',
-              theme: 'material',
-              lineNumbers: true,
-              scrollbarStyle: null,
-              lineWrapping: true,
-            }}
-            onBeforeChange={(editor, data, css) => {
-              setCss(css);
-            }}
-          />
-        </div>
-        <div className="code-editor js-code">
-          <div className="editor-header">JS</div>
-          <CodeMirror
-            value={js}
-            options={{
-              mode: 'javascript',
-              theme: 'material',
-              lineNumbers: true,
-              scrollbarStyle: null,
-              lineWrapping: true,
-            }}
-            onBeforeChange={(editor, data, js) => {
-              setJs(js);
-            }}
-          />
-        </div>
-      </section>}
-      {
-        selected === 'CPP' &&
-        <section className="playground">
-          <div className="code-editor-cpp cpp-code">
-            <div className="editor-header">CPP</div>
-            <CodeMirror
-              value={cpp}
-              options={{
-                mode: "text/x-csrc",
-                theme: 'material',
-                lineNumbers: true,
-                scrollbarStyle: null,
-                lineWrapping: true,
-              }}
-              onBeforeChange={(editor, data, cpp) => {
-                setcpp(cpp);
-              }}
-            />
-          </div>
-        </section>
-      }
-      {
-        selected === 'JAVA' &&
-        <section className="playground">
-          <div className="code-editor-java java-code">
-            <div className="editor-header">java</div>
-            <CodeMirror
-              value={java}
-              options={{
-                mode: "text/x-java",
-                theme: 'material',
-                lineNumbers: true,
-                scrollbarStyle: null,
-                lineWrapping: true,
-              }}
-              onBeforeChange={(editor, data, java) => {
-                setjava(java);
-              }}
-            />
-          </div>
-        </section>
-      }
-      {
-        selected === 'PYTHON' &&
-        <section className="playground">
-          <div className="code-editor-java flex flex-col h-full mb-5 java-code">
-            <div className="editor-header">python</div>
-            <CodeMirror
-              value={python}
-              className="flex-grow"
-              options={{
-                mode: "python",
-                theme: 'material',
-                lineNumbers: true,
-                scrollbarStyle: null,
-                lineWrapping: true,
-              }}
-              onBeforeChange={(editor, data, python) => {
-                setpython(python);
-              }}
-            />
-          </div>
-        </section>
-      }
-      <section className="result">
-        <VideoTile />
-        <textarea onChange={(e) => { setInput(e.target.value) }} value={input} rows="4" cols="50">
-        </textarea>
+        <div>
+          <section className="result">
+            <VideoTile />
+            <textarea onChange={(e) => { setInput(e.target.value) }} value={input} rows="4" cols="50">
+            </textarea>
 
-        <textarea onChange={(e) => { setOutput(e.target.value) }} value={output} rows="4" cols="50">
-        </textarea>
-        <button onClick={RunCode}>RUN</button>
-        <iframe title="result" className="iframe" ref={outputRef} />
+            <textarea onChange={(e) => { setOutput(e.target.value) }} value={output} rows="4" cols="50">
+            </textarea>
+            <button onClick={RunCode}>RUN</button>
+            <iframe title="result" className="iframe" ref={outputRef} />
 
-      </section>
+          </section>
+        </div>
+      </ResizablePanels>
 
     </div>
   )

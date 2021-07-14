@@ -15,7 +15,7 @@ export default function VideoTile() {
                 position={null}
                 grid={[1, 1]}
                 scale={1}
-                bounds={{ left: 0, top: 0, right: window.innerWidth - 200, bottom: window.innerHeight - 200 }}
+            // bounds={{ left: 0, top: 0, right: window.innerWidth - 200, bottom: window.innerHeight - 200 }}
             >
                 <div id="video-grid"></div>
             </Draggable>
