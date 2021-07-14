@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import ReactDOM from 'react-dom';
 import { io } from 'socket.io-client';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
@@ -11,8 +10,8 @@ import 'codemirror/mode/clike/clike';
 import 'codemirror/mode/python/python';
 import { useParams } from 'react-router';
 import Peer from 'peerjs';
+import VideoTile from './VideoTile';
 
-const videoRoot = document.getElementById('video-root');
 
 export default function IDE({ }) {
   const { id: DocId } = useParams();
@@ -395,9 +394,7 @@ export default function IDE({ }) {
         </section>
       }
       <section className="result">
-        <VideoGrid >
-          <div id="video-grid" className="absolute bottom-0 right-0"></div>
-        </VideoGrid>
+        <VideoTile />
         <textarea onChange={(e) => { setInput(e.target.value) }} value={input} rows="4" cols="50">
         </textarea>
 
@@ -410,26 +407,4 @@ export default function IDE({ }) {
 
     </div>
   )
-}
-
-class VideoGrid extends React.Component {
-  constructor(props) {
-    super(props);
-    this.el = document.createElement('div');
-  }
-
-  componentDidMount() {
-    videoRoot.appendChild(this.el);
-  }
-
-  componentWillUnmount() {
-    videoRoot.removeChild(this.el);
-  }
-
-  render() {
-    return ReactDOM.createPortal(
-      this.props.children,
-      this.el,
-    );
-  }
 }
