@@ -12,6 +12,7 @@ import { useParams } from 'react-router';
 import Peer from 'peerjs';
 import VideoTile from './VideoTile';
 import ResizablePanels from './Resizable';
+import { ReactSketchCanvas } from "react-sketch-canvas";
 
 
 export default function IDE({ }) {
@@ -33,6 +34,7 @@ export default function IDE({ }) {
   myVideo.muted = true;
   const [myStream, setMystream] = useState(null);
   const peers = {};
+  const canvas = useRef(null);
 
 
 
@@ -287,6 +289,15 @@ export default function IDE({ }) {
 
 
   };
+  const styles = {
+    border: "0.0625rem solid #9c9c9c",
+    borderRadius: "0.25rem"
+  };
+
+  const thauupdate = (update) => {
+    console.log(update)
+  }
+  
   return (
     <div id="editor" className="h-screen">
       <ResizablePanels>
@@ -419,6 +430,16 @@ export default function IDE({ }) {
             <button onClick={RunCode}>RUN</button>
             <button onClick = {muteMic}>Mute</button>
             <button onClick = {muteCam}>Video</button>
+            <ReactSketchCanvas
+              ref = {canvas}
+              style={styles}
+              width="600"
+              height="400"
+              strokeWidth={4}
+              strokeColor="red"
+              canvasColor="black"
+              onUpdate = {thauupdate}
+            />
             <iframe title="result" className="iframe" ref={outputRef} />
 
           </section>
