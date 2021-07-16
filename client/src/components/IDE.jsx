@@ -294,7 +294,7 @@ export default function IDE({ }) {
     borderRadius: "0.25rem"
   };
 
-  const thauupdate = (update) => {
+  const updateBoard = (update) => {
     console.log(update)
   }
   
@@ -302,58 +302,6 @@ export default function IDE({ }) {
     <div id="editor" className="h-screen">
       <ResizablePanels>
         <div className="h-full">
-          {selected === 'HCJ' &&
-            <section className="playground h-full">
-              <div className="code-editor html-code">
-                <div className="editor-header">HTML</div>
-                <CodeMirror
-                  value={html}
-                  options={{
-                    mode: 'htmlmixed',
-                    theme: 'material',
-                    lineNumbers: true,
-                    scrollbarStyle: null,
-                    lineWrapping: true,
-                  }}
-                  onBeforeChange={(editor, data, html) => {
-                    setHtml(html);
-                  }}
-                />
-              </div>
-              <div className="code-editor css-code">
-                <div className="editor-header">CSS</div>
-                <CodeMirror
-                  value={css}
-                  options={{
-                    mode: 'css',
-                    theme: 'material',
-                    lineNumbers: true,
-                    scrollbarStyle: null,
-                    lineWrapping: true,
-                  }}
-                  onBeforeChange={(editor, data, css) => {
-                    setCss(css);
-                  }}
-                />
-              </div>
-              <div className="code-editor js-code">
-                <div className="editor-header">JS</div>
-                <CodeMirror
-                  value={js}
-                  options={{
-                    mode: 'javascript',
-                    theme: 'material',
-                    lineNumbers: true,
-                    scrollbarStyle: null,
-                    lineWrapping: true,
-                  }}
-                  onBeforeChange={(editor, data, js) => {
-                    setJs(js);
-                  }}
-                />
-              </div>
-            </section>
-          }
           {
             selected === 'CPP' &&
             <section className="playground h-full">
@@ -438,9 +386,8 @@ export default function IDE({ }) {
               strokeWidth={4}
               strokeColor="red"
               canvasColor="black"
-              onUpdate = {thauupdate}
+              onUpdate = {updateBoard}
             />
-            <iframe title="result" className="iframe" ref={outputRef} />
 
           </section>
         </div>
