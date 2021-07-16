@@ -24,10 +24,12 @@ export default function IDE({ }) {
   const [cpp, setcpp] = useState('');
   const [java, setjava] = useState('');
   const [python, setpython] = useState('');
+  const [path, setPath] = useState([]);
   const [selected, setSelected] = useState('PYTHON');
   const [peer, setPeer] = useState(null);
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
+
   const outputRef = useRef(null);
   const videoGrid = document.getElementById('video-grid');
   const myVideo = document.createElement('video');
@@ -83,6 +85,8 @@ export default function IDE({ }) {
       setcpp(delta.cpp);
       setjava(delta.java);
       setpython(delta.python);
+      setPath(delta.path);
+      canvas.current.loadPaths(delta.path);
     };
     socket.on('receive-changes', updateContent);
     return () => {
@@ -100,53 +104,19 @@ export default function IDE({ }) {
       'java': java,
       'python': python
     };
-    socket.emit('save-document', data);
-    socket.emit('changes', data);
-  }, [socket, html, css, js, cpp, java, python]);
 
-  const Resultcode = () => {
-    const timeout = setTimeout(() => {
-      const DOC = outputRef.current.contentDocument;
-      const DOC_CON = `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta http-equiv="X-UA-Compatible" content="ie=edge">
-                <title>Document</title>
-                <style>
-                    ${css}
-                </style>
-                </head>
-                <body>
-                ${html}
-        
-                <script type="text/javascript">
-                    ${js}
-                </script>
-                </body>
-                </html>
-            `;
-      if (DOC === 'undefined') return;
-      else {
-        DOC.open();
-        DOC.write(DOC_CON);
-        DOC.close();
-      }
-
-    }, 1000);
-
-    return () => {
-      clearTimeout(timeout);
+    var data1 = {
+      'html': html,
+      'css': css,
+      'js': js,
+      'cpp': cpp,
+      'java': java,
+      'python': python,
+      'path': path
     }
-
-  };
-
-  useEffect(() => {
-    Resultcode();
-  }, [html, css, js, cpp, java, python]);
-
+    socket.emit('save-document', data);
+    socket.emit('changes', data1);
+  }, [socket, html, css, js, cpp, java, python, path]);
 
   function addVideoStream(video, stream) {
     video.srcObject = stream
@@ -200,6 +170,9 @@ export default function IDE({ }) {
     });
 
   }, [socket, DocId, peer]);
+
+
+
 
   const muteMic = () => {
     myStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
@@ -282,12 +255,6 @@ export default function IDE({ }) {
           .catch(e => console.log(e));
       })
       .catch(e => console.log(e));
-
-
-
-
-
-
   };
   const styles = {
     border: "0.0625rem solid #9c9c9c",
@@ -295,7 +262,8 @@ export default function IDE({ }) {
   };
 
   const updateBoard = (update) => {
-    console.log(update)
+    console.log(update);
+    setPath(update);
   }
   
   return (

@@ -49,8 +49,9 @@ io.on('connection', (socket) =>  {
 
 
         socket.on('save-document', async (data) => {
-            Doc.findByIdAndUpdate({'_id': DocId}, { 'html': data.html, 'css': data.css, 'js': data.js, 'python': data.python, 'cpp': data.cpp, 'java': data.java}).then((d) => {
-                console.log(d);
+            console.log(data);
+            Doc.findByIdAndUpdate({'_id': DocId}, { 'html': data.html, 'css': data.css, 'js': data.js, 'python': data.python, 'cpp': data.cpp, 'java': data.java }).then((d) => {
+               // console.log(d);
             })  
             .catch(err => { 
                 console.error(err);
@@ -64,9 +65,9 @@ io.on('connection', (socket) =>  {
         socket.to(roomId).emit('user-connected', userId)
 
         socket.on('disconnect', () => {
-        socket.to(roomId).emit('user-disconnected', userId)
-        })
-    })
+            socket.to(roomId).emit('user-disconnected', userId)
+        });
+    });
     console.log("connected");
 });
 
