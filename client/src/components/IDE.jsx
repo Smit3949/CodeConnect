@@ -27,7 +27,6 @@ export default function IDE({ }) {
   const [cpp, setcpp] = useState('');
   const [java, setjava] = useState('');
   const [python, setpython] = useState('');
-  const [path, setPath] = useState([]);
   const [selected, setSelected] = useState('PYTHON');
   const [peer, setPeer] = useState(null);
   const [input, setInput] = useState('');
@@ -39,14 +38,13 @@ export default function IDE({ }) {
   myVideo.muted = true;
   const [myStream, setMystream] = useState(null);
   const peers = {};
-  const canvas = useRef(null);
+  const can = useRef(null);
 
 
 
   useEffect(() => {
     var TempSocket = io('http://localhost:3001');
     setSocket(TempSocket);
-
     const peer = new Peer(undefined, {
       host: 'localhost',
       port: 9000,
@@ -62,8 +60,6 @@ export default function IDE({ }) {
 
   useEffect(() => {
     if (socket == null) return;
-
-
     socket.once('load-document', (data) => {
       console.log(data);
       setHtml(data.html);
@@ -88,14 +84,12 @@ export default function IDE({ }) {
       setcpp(delta.cpp);
       setjava(delta.java);
       setpython(delta.python);
-      setPath(delta.path);
-      canvas.current.loadPaths(delta.path);
     };
     socket.on('receive-changes', updateContent);
     return () => {
       socket.off('receive-changes', updateContent);
     }
-  }, [socket]);
+  }, [socket,html, css, js, cpp, java, python]);
 
   useEffect(() => {
     if (socket === null) return;
@@ -108,25 +102,17 @@ export default function IDE({ }) {
       'python': python
     };
 
-    var data1 = {
-      'html': html,
-      'css': css,
-      'js': js,
-      'cpp': cpp,
-      'java': java,
-      'python': python,
-      'path': path
-    }
     socket.emit('save-document', data);
-    socket.emit('changes', data1);
-  }, [socket, html, css, js, cpp, java, python, path]);
+    socket.emit('changes', data);
+  }, [socket, html, css, js, cpp, java, python]);
+
 
   function addVideoStream(video, stream) {
-    video.srcObject = stream
+    video.srcObject = stream;
     video.addEventListener('loadedmetadata', () => {
-      video.play()
+      video.play();
     })
-    videoGrid.append(video)
+    videoGrid.append(video);
   };
 
   useEffect(() => {
@@ -175,6 +161,102 @@ export default function IDE({ }) {
   }, [socket, DocId, peer]);
 
 
+  useEffect(() => {
+    if(socket === null) return;
+    console.log('hry');
+    var canvas = document.getElementsByClassName('whiteboard')[0];;
+    var context = canvas.getContext('2d');
+    var current = {
+      color: 'black'
+    };
+    var drawing = false;
+  
+    canvas.addEventListener('mousedown', onMouseDown, false);
+    canvas.addEventListener('mouseup', onMouseUp, false);
+    canvas.addEventListener('mouseout', onMouseUp, false);
+    canvas.addEventListener('mousemove', throttle(onMouseMove, 10), false);
+    
+    //Touch support for mobile devices
+    canvas.addEventListener('touchstart', onMouseDown, false);
+    canvas.addEventListener('touchend', onMouseUp, false);
+    canvas.addEventListener('touchcancel', onMouseUp, false);
+    canvas.addEventListener('touchmove', throttle(onMouseMove, 10), false);
+  
+    
+  
+    socket.on('drawing', onDrawingEvent);
+  
+    window.addEventListener('resize', onResize, false);
+    onResize();
+  
+  
+    function drawLine(x0, y0, x1, y1, color, emit){
+      context.beginPath();
+      context.moveTo(x0, y0);
+      context.lineTo(x1, y1);
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      context.stroke();
+      context.closePath();
+  
+      if (!emit) { return; }
+      var w = canvas.width;
+      var h = canvas.height;
+  
+      socket.emit('drawing', {
+        x0: x0 / w,
+        y0: y0 / h,
+        x1: x1 / w,
+        y1: y1 / h,
+        color: color
+      });
+    }
+  
+    function onMouseDown(e){
+      drawing = true;
+      current.x = e.clientX||e.touches[0].clientX;
+      current.y = e.clientY||e.touches[0].clientY;
+    }
+  
+    function onMouseUp(e){
+      if (!drawing) { return; }
+      drawing = false;
+      drawLine(current.x, current.y, e.clientX||e.touches[0].clientX, e.clientY||e.touches[0].clientY, current.color, true);
+    }
+  
+    function onMouseMove(e){
+      if (!drawing) { return; }
+      drawLine(current.x, current.y, e.clientX||e.touches[0].clientX, e.clientY||e.touches[0].clientY, current.color, true);
+      current.x = e.clientX||e.touches[0].clientX;
+      current.y = e.clientY||e.touches[0].clientY;
+    }
+  
+    // limit the number of events per second
+    function throttle(callback, delay) {
+      var previousCall = new Date().getTime();
+      return function() {
+        var time = new Date().getTime();
+  
+        if ((time - previousCall) >= delay) {
+          previousCall = time;
+          callback.apply(null, arguments);
+        }
+      };
+    }
+  
+    function onDrawingEvent(data){
+      var w = canvas.width;
+      var h = canvas.height;
+      drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color);
+    }
+  
+    // make the canvas fill its parent
+    function onResize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+  
+  }, [socket]);
 
 
   const muteMic = () => {
@@ -259,6 +341,7 @@ export default function IDE({ }) {
       })
       .catch(e => console.log(e));
   };
+
   const styles = {
     border: "0.0625rem solid #9c9c9c",
     borderRadius: "0.25rem"
