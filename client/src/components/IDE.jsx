@@ -13,6 +13,9 @@ import Peer from 'peerjs';
 import VideoTile from './VideoTile';
 import ResizablePanels from './Resizable';
 import { ReactSketchCanvas } from "react-sketch-canvas";
+import logo from '../images/logo.svg';
+import upArrow from '../images/icons/up-arrow.svg';
+import runIcon from '../images/icons/run.svg';
 
 
 export default function IDE({ }) {
@@ -182,7 +185,7 @@ export default function IDE({ }) {
     myStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
   }
 
-  const RunCode = () => {
+  const runCode = () => {
     var lang = selected;
     console.log(lang, input);
     var backend_url = 'https://api.hackerearth.com/v4/partner/code-evaluation/submissions/';
@@ -265,102 +268,160 @@ export default function IDE({ }) {
     console.log(update);
     setPath(update);
   }
-  
+
   return (
-    <div id="editor" className="h-screen">
-      <ResizablePanels>
-        <div className="h-full">
-          {
-            selected === 'CPP' &&
-            <section className="playground h-full">
-              <div className="code-editor-cpp cpp-code">
-                <div className="editor-header">CPP</div>
-                <CodeMirror
-                  value={cpp}
-                  options={{
-                    mode: "text/x-csrc",
-                    theme: 'material',
-                    lineNumbers: true,
-                    scrollbarStyle: null,
-                    lineWrapping: true,
-                  }}
-                  onBeforeChange={(editor, data, cpp) => {
-                    setcpp(cpp);
-                  }}
+    <div className="flex">
+      <div className="h-screen flex flex-grow flex-col">
+        <Header runCode={runCode} />
+        <div className="flex-grow flex">
+          <div id="editor" className="flex-grow flex flex-col">
+            <FileTabs />
+            <div className="h-96 overflow-y-auto">
+              {
+                selected === 'CPP' &&
+                <section className="playground">
+                  <div className="code-editor-cpp cpp-code h-full">
+                    <div className="editor-header">CPP</div>
+                    <CodeMirror
+                      value={cpp}
+                      options={{
+                        mode: "text/x-csrc",
+                        theme: 'material',
+                        lineNumbers: true,
+                        scrollbarStyle: null,
+                        lineWrapping: true,
+                      }}
+                      onBeforeChange={(editor, data, cpp) => {
+                        setcpp(cpp);
+                      }}
+                    />
+                  </div>
+                </section>
+              }
+              {
+                selected === 'JAVA' &&
+                <section className="playground">
+                  <div className="code-editor-java java-code h-full">
+                    <div className="editor-header">java</div>
+                    <CodeMirror
+                      value={java}
+                      options={{
+                        mode: "text/x-java",
+                        theme: 'material',
+                        lineNumbers: true,
+                        scrollbarStyle: null,
+                        lineWrapping: true,
+                      }}
+                      onBeforeChange={(editor, data, java) => {
+                        setjava(java);
+                      }}
+                    />
+                  </div>
+                </section>
+              }
+              {
+                selected === 'PYTHON' &&
+                <section className="playground">
+                  <div className="code-editor-java flex flex-col h-full mb-5 java-code">
+                    <div className="editor-header">python</div>
+                    <CodeMirror
+                      value={python}
+                      className="flex-grow"
+                      options={{
+                        mode: "python",
+                        theme: 'material',
+                        lineNumbers: true,
+                        scrollbarStyle: null,
+                        lineWrapping: true,
+                      }}
+                      onBeforeChange={(editor, data, python) => {
+                        setpython(python);
+                      }}
+                    />
+                  </div>
+                </section>
+              }
+            </div>
+            <div className="px-2 flex-grow ">
+              <section className="result">
+                <textarea onChange={(e) => { setInput(e.target.value) }} value={input} rows="4" cols="50">
+                </textarea>
+
+                <textarea onChange={(e) => { setOutput(e.target.value) }} value={output} rows="4" cols="50">
+                </textarea>
+                <button onClick={muteMic}>Mute</button>
+                <button onClick={muteCam}>Video</button>
+                <ReactSketchCanvas
+                  ref={canvas}
+                  style={styles}
+                  width="600"
+                  height="400"
+                  strokeWidth={4}
+                  strokeColor="red"
+                  canvasColor="black"
+                  onUpdate={updateBoard}
                 />
-              </div>
-            </section>
-          }
-          {
-            selected === 'JAVA' &&
-            <section className="playground h-full">
-              <div className="code-editor-java java-code">
-                <div className="editor-header">java</div>
-                <CodeMirror
-                  value={java}
-                  options={{
-                    mode: "text/x-java",
-                    theme: 'material',
-                    lineNumbers: true,
-                    scrollbarStyle: null,
-                    lineWrapping: true,
-                  }}
-                  onBeforeChange={(editor, data, java) => {
-                    setjava(java);
-                  }}
-                />
-              </div>
-            </section>
-          }
-          {
-            selected === 'PYTHON' &&
-            <section className="playground h-full">
-              <div className="code-editor-java flex flex-col h-full mb-5 java-code">
-                <div className="editor-header">python</div>
-                <CodeMirror
-                  value={python}
-                  className="flex-grow"
-                  options={{
-                    mode: "python",
-                    theme: 'material',
-                    lineNumbers: true,
-                    scrollbarStyle: null,
-                    lineWrapping: true,
-                  }}
-                  onBeforeChange={(editor, data, python) => {
-                    setpython(python);
-                  }}
-                />
-              </div>
-            </section>
-          }
+
+              </section>
+            </div>
+          </div>
+          <RightVideoPanel />
         </div>
-        <div>
-          <section className="result">
-            <VideoTile />
-            <textarea onChange={(e) => { setInput(e.target.value) }} value={input} rows="4" cols="50">
-            </textarea>
+      </div>
+    </div>
+  )
+}
 
-            <textarea onChange={(e) => { setOutput(e.target.value) }} value={output} rows="4" cols="50">
-            </textarea>
-            <button onClick={RunCode}>RUN</button>
-            <button onClick = {muteMic}>Mute</button>
-            <button onClick = {muteCam}>Video</button>
-            <ReactSketchCanvas
-              ref = {canvas}
-              style={styles}
-              width="600"
-              height="400"
-              strokeWidth={4}
-              strokeColor="red"
-              canvasColor="black"
-              onUpdate = {updateBoard}
-            />
 
-          </section>
-        </div>
-      </ResizablePanels>
+function Header({ runCode }) {
+  return (
+    <div className=" bg-purple-standard flex py-2 px-2 justify-end items-center">
+      {/* <div className="h-16">
+        <img className="h-full" src={logo} alt="codeconnect logo" />
+      </div> */}
+      <div className="flex">
+        <button onClick={runCode} className="bg-orange-standard flex items-center text-base font-medium rounded px-3 py-1 mr-2">
+          <img className="h-3" src={runIcon} alt="run code icon" />
+          <span className="ml-2">Run</span>
+        </button>
+        <button className="bg-orange-standard border border-r rounded px-3 py-1 ml-2">
+          Login/Register
+        </button>
+      </div>
+    </div>
+  )
+}
 
+
+function RightVideoPanel() {
+  return (
+    <div className="flex flex-col items-center px-2 bg-purple-dark shadow-lg">
+      <button><img className="h-4 my-2" src={upArrow} alt="scroll up arrow" /></button>
+      <div className="flex flex-col items-center justify-center" id="video-grid"></div>
+      <button><img className="h-4 my-2 transform rotate-180" src={upArrow} alt="scroll down arrow" /></button>
+    </div>
+  )
+}
+
+function FileTabs({ files }) {
+  return (
+    <div className="w-full">
+      {
+        files && files.map((file, index) => {
+          return (
+            <div className="flex flex-col items-center justify-center" key={index}>
+              <div className="flex flex-col items-center justify-center">
+                <div className="flex-grow flex-shrink-0">
+                  <img className="h-4 my-2" src={file.icon} alt="file icon" />
+                </div>
+                <div className="flex-grow flex-shrink-0">
+                  <span className="ml-2">{file.name}</span>
+                </div>
+              </div>
+            </div>
+          )
+        })
+      }
     </div>
   )
 }
