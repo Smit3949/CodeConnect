@@ -27,7 +27,7 @@ export default function IDE({ }) {
   const [cpp, setcpp] = useState('');
   const [java, setjava] = useState('');
   const [python, setpython] = useState('');
-  const [selected, setSelected] = useState('PYTHON');
+  const [selected, setSelected] = useState('PYTON');
   const [peer, setPeer] = useState(null);
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
@@ -37,8 +37,8 @@ export default function IDE({ }) {
   myVideo.muted = true;
   const [myStream, setMystream] = useState(null);
   const peers = {};
-  const can = useRef(null);
-  const colorRef = useRef(null);
+  const canvasRef = useRef(null);
+  const colorsRef = useRef(null);
 
 
 
@@ -163,26 +163,22 @@ export default function IDE({ }) {
 
   useEffect(() => {
 
-    if(socket === null || can === null || colorRef === null) return;
-    console.log('IN');
-    const canvas = can.current;
-    const test = colorRef.current;
+    
+    if(socket === null || colorsRef === null) return;
+    const canvas = document.getElementById('whiteboard-canvas')
+    const test = colorsRef.current;
     const context = canvas.getContext('2d');
 
-    
     const colors = document.getElementsByClassName('color');
+    console.log(colors, 'the colors');
     console.log(test);
-    console.log(colors);
-
     const current = {
       color: 'black',
-      lineWidth: 5
+      width:5,
     };
 
     const onColorUpdate = (e) => {
       current.color = e.target.className.split(' ')[1];
-      if(current.color === 'white') current.lineWidth = 10;
-      else current.lineWidth = 5;
     };
 
     for (let i = 0; i < colors.length; i++) {
@@ -196,15 +192,17 @@ export default function IDE({ }) {
       context.moveTo(x0, y0);
       context.lineTo(x1, y1);
       context.strokeStyle = color;
-      context.lineWidth = 5;
+      context.lineWidth = current.width;
       context.stroke();
       context.closePath();
 
       if (!emit) { return; }
       const w = canvas.width;
       const h = canvas.height;
+      console.log(w, h, window.width, window.height);
 
-      socket.current.emit('drawing', {
+
+      socket.emit('drawing', {
         x0: x0 / w,
         y0: y0 / h,
         x1: x1 / w,
@@ -213,8 +211,12 @@ export default function IDE({ }) {
       });
     };
 
+  
+    // ---------------- mouse movement --------------------------------------
 
     const onMouseDown = (e) => {
+
+      console.log(drawing + ' d' );
       drawing = true;
       current.x = e.clientX || e.touches[0].clientX;
       current.y = e.clientY || e.touches[0].clientY;
@@ -228,12 +230,11 @@ export default function IDE({ }) {
     };
 
     const onMouseUp = (e) => {
+
       if (!drawing) { return; }
       drawing = false;
       drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, true);
     };
-
-
     const throttle = (callback, delay) => {
       let previousCall = new Date().getTime();
       return function() {
@@ -246,6 +247,7 @@ export default function IDE({ }) {
       };
     };
 
+
     canvas.addEventListener('mousedown', onMouseDown, false);
     canvas.addEventListener('mouseup', onMouseUp, false);
     canvas.addEventListener('mouseout', onMouseUp, false);
@@ -255,6 +257,7 @@ export default function IDE({ }) {
     canvas.addEventListener('touchend', onMouseUp, false);
     canvas.addEventListener('touchcancel', onMouseUp, false);
     canvas.addEventListener('touchmove', throttle(onMouseMove, 10), false);
+
 
     const onResize = () => {
       canvas.width = window.innerWidth;
@@ -268,11 +271,8 @@ export default function IDE({ }) {
       const h = canvas.height;
       drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color);
     }
-
-    socket.current = io.connect('/');
-    socket.current.on('drawing', onDrawingEvent);
+    socket.on('drawing', onDrawingEvent);
   }, [socket]);
-
 
 
   const muteMic = () => {
@@ -363,13 +363,12 @@ export default function IDE({ }) {
     borderRadius: "0.25rem"
   };
 
-  const updateBoard = (update) => {
-    console.log(update);
-    setPath(update);
-  }
+  
 
   return (
+    <>
     <div className="flex">
+
       <div className="h-screen flex flex-grow flex-col">
         <Header runCode={runCode} />
         <div className="flex-grow flex">
@@ -443,24 +442,20 @@ export default function IDE({ }) {
             </div>
             <div className="px-2 flex-grow ">
               <section className="result">
-                <textarea onChange={(e) => { setInput(e.target.value) }} value={input} rows="4" cols="50">
+                {/* <textarea onChange={(e) => { setInput(e.target.value) }} value={input} rows="4" cols="50">
                 </textarea>
 
                 <textarea onChange={(e) => { setOutput(e.target.value) }} value={output} rows="4" cols="50">
-                </textarea>
+                </textarea> */}
+                <div ref={colorsRef} className="colors">
+                  <button className="color black" >black</button>
+                  <button className="color white"> white</button>
+                </div>
                 <button onClick={muteMic}>Mute</button>
                 <button onClick={muteCam}>Video</button>
-                <ReactSketchCanvas
-                  ref={canvas}
-                  style={styles}
-                  width="600"
-                  height="400"
-                  strokeWidth={4}
-                  strokeColor="red"
-                  canvasColor="black"
-                  onUpdate={updateBoard}
-                />
-
+                
+              
+                <canvas  id="whiteboard-canvas" className="whiteboard" />
               </section>
             </div>
           </div>
@@ -468,6 +463,7 @@ export default function IDE({ }) {
         </div>
       </div>
     </div>
+    </>
   )
 }
 
