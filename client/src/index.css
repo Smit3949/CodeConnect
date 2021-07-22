@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body,html{
+  overflow: hidden;
+}
+
 .playground {
   height: 100%;
   background-color: #1e1e25;
@@ -35,7 +39,7 @@
   right: 0;
   bottom: 0;
   left: 600px; */
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 video {

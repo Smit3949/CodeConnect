@@ -16,6 +16,10 @@ import { ReactSketchCanvas } from "react-sketch-canvas";
 import logo from '../images/logo.svg';
 import upArrow from '../images/icons/up-arrow.svg';
 import runIcon from '../images/icons/run.svg';
+import closeIcon from '../images/icons/close.png';
+import muteIcon from '../images/icons/mute.svg';
+import videoIcon from '../images/icons/video.svg';
+import phoneIcon from '../images/icons/phone.svg';
 
 
 export default function IDE({ }) {
@@ -27,13 +31,15 @@ export default function IDE({ }) {
   const [cpp, setcpp] = useState('');
   const [java, setjava] = useState('');
   const [python, setpython] = useState('');
-  const [selected, setSelected] = useState('PYTON');
+  const [selected, setSelected] = useState('PYTHON');
   const [peer, setPeer] = useState(null);
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
+  const [modal, setModal] = useState(false);
   const outputRef = useRef(null);
   const videoGrid = document.getElementById('video-grid');
   const myVideo = document.createElement('video');
+  myVideo.className = "rounded mb-4"
   myVideo.muted = true;
   const [myStream, setMystream] = useState(null);
   const peers = {};
@@ -89,7 +95,7 @@ export default function IDE({ }) {
     return () => {
       socket.off('receive-changes', updateContent);
     }
-  }, [socket,html, css, js, cpp, java, python]);
+  }, [socket, html, css, js, cpp, java, python]);
 
   useEffect(() => {
     if (socket === null) return;
@@ -115,56 +121,56 @@ export default function IDE({ }) {
     videoGrid.append(video);
   };
 
-  // useEffect(() => {
-  //   if (socket == null) return;
+  useEffect(() => {
+    if (socket == null) return;
 
-  //   navigator.mediaDevices.getUserMedia({
-  //     video: true,
-  //     audio: true
-  //   }).then(stream => {
-  //     addVideoStream(myVideo, stream);
-  //     setMystream(stream);
-  //     peer.on('call', cal => {
-  //       cal.answer(stream);
-  //       const video = document.createElement('video');
+    navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    }).then(stream => {
+      addVideoStream(myVideo, stream);
+      setMystream(stream);
+      peer.on('call', cal => {
+        cal.answer(stream);
+        const video = document.createElement('video');
 
-  //       cal.on('stream', (anotherUserVideoStream) => {
-  //         addVideoStream(video, anotherUserVideoStream);
-  //       });
-  //     });
-
-
-  //     socket.on('user-connected', (userId) => {
-  //       const call = peer.call(userId, stream);
-  //       const video = document.createElement('video');
-  //       call.on('stream', (anotherUserVideoStream) => {
-  //         addVideoStream(video, anotherUserVideoStream);
-  //       });
-
-  //       call.on('close', () => {
-  //         video.remove();
-  //       });
-  //       peers[userId] = call;
-  //     });
+        cal.on('stream', (anotherUserVideoStream) => {
+          addVideoStream(video, anotherUserVideoStream);
+        });
+      });
 
 
-  //   });
+      socket.on('user-connected', (userId) => {
+        const call = peer.call(userId, stream);
+        const video = document.createElement('video');
+        call.on('stream', (anotherUserVideoStream) => {
+          addVideoStream(video, anotherUserVideoStream);
+        });
 
-  //   socket.on('user-disconnected', userId => {
-  //     if (peers[userId]) peers[userId].close()
-  //   });
+        call.on('close', () => {
+          video.remove();
+        });
+        peers[userId] = call;
+      });
 
-  //   peer.on('open', (id) => {
-  //     socket.emit('join-room', DocId, id);
-  //   });
 
-  // }, [socket, DocId, peer]);
+    });
+
+    socket.on('user-disconnected', userId => {
+      if (peers[userId]) peers[userId].close()
+    });
+
+    peer.on('open', (id) => {
+      socket.emit('join-room', DocId, id);
+    });
+
+  }, [socket, DocId, peer]);
 
 
   useEffect(() => {
 
-    
-    if(socket === null || colorsRef === null) return;
+
+    if (socket === null || colorsRef === null) return;
     const canvas = document.getElementById('whiteboard-canvas')
     const test = colorsRef.current;
     const context = canvas.getContext('2d');
@@ -174,7 +180,7 @@ export default function IDE({ }) {
     console.log(test);
     const current = {
       color: 'black',
-      width:5,
+      width: 5,
     };
 
     const onColorUpdate = (e) => {
@@ -211,12 +217,12 @@ export default function IDE({ }) {
       });
     };
 
-  
+
     // ---------------- mouse movement --------------------------------------
 
     const onMouseDown = (e) => {
 
-      console.log(drawing + ' d' );
+      console.log(drawing + ' d');
       drawing = true;
       current.x = e.clientX || e.touches[0].clientX;
       current.y = e.clientY || e.touches[0].clientY;
@@ -237,7 +243,7 @@ export default function IDE({ }) {
     };
     const throttle = (callback, delay) => {
       let previousCall = new Date().getTime();
-      return function() {
+      return function () {
         const time = new Date().getTime();
 
         if ((time - previousCall) >= delay) {
@@ -363,118 +369,121 @@ export default function IDE({ }) {
     borderRadius: "0.25rem"
   };
 
-  
+  const toggleModal = () => {
+    setModal(!modal);
+  }
 
   return (
     <>
-    <div className="flex">
+      <div className="flex">
 
-      <div className="h-screen flex flex-grow flex-col">
-        <Header runCode={runCode} />
-        <div className="flex-grow flex">
-          <div id="editor" className="flex-grow flex flex-col">
-            <FileTabs />
-            <div className="h-96 overflow-y-auto">
-              {
-                selected === 'CPP' &&
-                <section className="playground">
-                  <div className="code-editor-cpp cpp-code h-full">
-                    <div className="editor-header">CPP</div>
-                    <CodeMirror
-                      value={cpp}
-                      options={{
-                        mode: "text/x-csrc",
-                        theme: 'material',
-                        lineNumbers: true,
-                        scrollbarStyle: null,
-                        lineWrapping: true,
-                      }}
-                      onBeforeChange={(editor, data, cpp) => {
-                        setcpp(cpp);
-                      }}
-                    />
-                  </div>
-                </section>
-              }
-              {
-                selected === 'JAVA' &&
-                <section className="playground">
-                  <div className="code-editor-java java-code h-full">
-                    <div className="editor-header">java</div>
-                    <CodeMirror
-                      value={java}
-                      options={{
-                        mode: "text/x-java",
-                        theme: 'material',
-                        lineNumbers: true,
-                        scrollbarStyle: null,
-                        lineWrapping: true,
-                      }}
-                      onBeforeChange={(editor, data, java) => {
-                        setjava(java);
-                      }}
-                    />
-                  </div>
-                </section>
-              }
-              {
-                selected === 'PYTHON' &&
-                <section className="playground">
-                  <div className="code-editor-java flex flex-col h-full mb-5 java-code">
-                    <div className="editor-header">python</div>
-                    <CodeMirror
-                      value={python}
-                      className="flex-grow"
-                      options={{
-                        mode: "python",
-                        theme: 'material',
-                        lineNumbers: true,
-                        scrollbarStyle: null,
-                        lineWrapping: true,
-                      }}
-                      onBeforeChange={(editor, data, python) => {
-                        setpython(python);
-                      }}
-                    />
-                  </div>
-                </section>
-              }
-            </div>
-            <div className="px-2 flex-grow ">
-              <section className="result">
+        <div className="h-screen flex flex-grow flex-col">
+          <Header runCode={runCode} toggleModal={toggleModal} />
+          <div className="flex-grow flex">
+            <div id="editor" className="flex-grow flex flex-col">
+              <FileTabs />
+              <div className="h-96 overflow-y-auto">
+                {
+                  selected === 'CPP' &&
+                  <section className="playground">
+                    <div className="code-editor-cpp cpp-code h-full">
+                      <div className="editor-header">CPP</div>
+                      <CodeMirror
+                        value={cpp}
+                        options={{
+                          mode: "text/x-csrc",
+                          theme: 'material',
+                          lineNumbers: true,
+                          scrollbarStyle: null,
+                          lineWrapping: true,
+                        }}
+                        onBeforeChange={(editor, data, cpp) => {
+                          setcpp(cpp);
+                        }}
+                      />
+                    </div>
+                  </section>
+                }
+                {
+                  selected === 'JAVA' &&
+                  <section className="playground">
+                    <div className="code-editor-java java-code h-full">
+                      <div className="editor-header">java</div>
+                      <CodeMirror
+                        value={java}
+                        options={{
+                          mode: "text/x-java",
+                          theme: 'material',
+                          lineNumbers: true,
+                          scrollbarStyle: null,
+                          lineWrapping: true,
+                        }}
+                        onBeforeChange={(editor, data, java) => {
+                          setjava(java);
+                        }}
+                      />
+                    </div>
+                  </section>
+                }
+                {
+                  selected === 'PYTHON' &&
+                  <section className="playground">
+                    <div className="code-editor-java flex flex-col h-full mb-5 java-code">
+                      <div className="editor-header">python</div>
+                      <CodeMirror
+                        value={python}
+                        className="flex-grow"
+                        options={{
+                          mode: "python",
+                          theme: 'material',
+                          lineNumbers: true,
+                          scrollbarStyle: null,
+                          lineWrapping: true,
+                        }}
+                        onBeforeChange={(editor, data, python) => {
+                          setpython(python);
+                        }}
+                      />
+                    </div>
+                  </section>
+                }
+              </div>
+              <div className={`flex-grow ${modal ? "top-0" : " top-full"} duration-300 left-0 p-4 backdrop-filter backdrop-blur-sm absolute z-50 w-screen h-screen`}>
                 {/* <textarea onChange={(e) => { setInput(e.target.value) }} value={input} rows="4" cols="50">
                 </textarea>
 
                 <textarea onChange={(e) => { setOutput(e.target.value) }} value={output} rows="4" cols="50">
                 </textarea> */}
-                <div ref={colorsRef} className="colors">
-                  <button className="color black" >black</button>
-                  <button className="color white"> white</button>
+                {/* <div ref={colorsRef} className="colors">
+                    <button className="color black" >black</button>
+                    <button className="color white"> white</button>
+                  </div> */}
+                {/* <button onClick={muteMic}>Mute</button>
+                  <button onClick={muteCam}>Video</button> */}
+                <div className="absolute right-10 top-10">
+                  <img onClick={toggleModal} src={closeIcon} className="w-6 cursor-pointer" alt="close icon" />
                 </div>
-                <button onClick={muteMic}>Mute</button>
-                <button onClick={muteCam}>Video</button>
-                
-              
-                <canvas  id="whiteboard-canvas" className="whiteboard" />
-              </section>
+
+                <canvas id="whiteboard-canvas" className="m-0 border h-full w-full bg-white rounded-xl border-black" />
+              </div>
             </div>
+            <RightVideoPanel />
           </div>
-          <RightVideoPanel />
         </div>
       </div>
-    </div>
     </>
   )
 }
 
 
-function Header({ runCode }) {
+function Header({ runCode, toggleModal }) {
   return (
     <div className=" bg-purple-standard flex py-2 px-2 justify-end items-center">
       {/* <div className="h-16">
         <img className="h-full" src={logo} alt="codeconnect logo" />
       </div> */}
       <div className="flex">
+        <button className=" text-white mr-4" onClick={toggleModal}>whiteboard</button>
         <button onClick={runCode} className="bg-orange-standard flex items-center text-base font-medium rounded px-3 py-1 mr-2">
           <img className="h-3" src={runIcon} alt="run code icon" />
           <span className="ml-2">Run</span>
@@ -494,6 +503,17 @@ function RightVideoPanel() {
       <button><img className="h-4 my-2" src={upArrow} alt="scroll up arrow" /></button>
       <div className="flex flex-col items-center justify-center" id="video-grid"></div>
       <button><img className="h-4 my-2 transform rotate-180" src={upArrow} alt="scroll down arrow" /></button>
+      <div className="flex items-center w-full justify-around mt-2">
+        <button className="bg-orange-standard border border-r rounded-full h-8 w-8 p-1.5">
+          <img src={muteIcon} alt="mute icon" />
+        </button>
+        <button className="bg-orange-standard border border-r rounded-full h-8 w-8 p-1.5">
+          <img src={videoIcon} alt="video icon" />
+        </button>
+        <button className="bg-orange-standard border border-r rounded-full h-8 w-8 p-1.5">
+          <img src={phoneIcon} alt="phone icon" />
+        </button>
+      </div>
     </div>
   )
 }
