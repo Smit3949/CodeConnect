@@ -28,7 +28,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "craco start",
+    "start": "craco start --env-file=.env.local",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"

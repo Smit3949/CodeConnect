@@ -44,7 +44,7 @@ export default function IDE({ }) {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [modal, setModal] = useState(false);
-  const [username, setUsername] = useState('smit'); 
+  const [username, setUsername] = useState('smit');
   const outputRef = useRef(null);
   const videoGrid = document.getElementById('video-grid');
   const myVideo = document.createElement('video');
@@ -59,6 +59,32 @@ export default function IDE({ }) {
 
 
   useEffect(() => {
+
+    if (!DocId) { // url = 'domain/' <-- no room ID
+      const obj = localStorage.getItem('roomId');
+      let roomId = obj.id;
+      const currentTime = Date.now();
+      // check if time is within last 2 minutes
+      if (currentTime - obj.time < 120000 && roomId) {
+        console.log('using old roomId');
+      }
+      else {
+        roomId = uuidV4();
+        localStorage.setItem('roomId', {
+          id: roomId,
+          time: Date.now()
+        });
+      }
+      window.location.href = `/${roomId}`;
+    }
+    else { // url = 'domain/<room-id>' <-- room ID present
+      localStorage.setItem('roomId', {
+        id: DocId,
+        time: Date.now()
+      });
+    }
+
+
     var TempSocket = io('http://localhost:3001');
     setSocket(TempSocket);
     const peer = new Peer(undefined, {
@@ -139,7 +165,7 @@ export default function IDE({ }) {
       audio: true
     }).then(stream => {
       addVideoStream(myVideo, stream);
-      
+
       setMystream(stream);
       peer.on('call', cal => {
         cal.answer(stream);
@@ -153,13 +179,13 @@ export default function IDE({ }) {
 
       socket.on('user-connected', (userId, username) => {
         const call = peer.call(userId, stream);
-        console.log('user connected : ', username);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+        console.log('user connected : ', username);
         const video = document.createElement('video');
         call.on('stream', (anotherUserVideoStream) => {
 
           console.log(anotherUserVideoStream.getAudioTracks());
           addVideoStream(video, anotherUserVideoStream);
-        });                                                                                                                             
+        });
 
         call.on('close', () => {
           video.remove();
@@ -187,13 +213,13 @@ export default function IDE({ }) {
 
   const muteCam = () => {
     console.log('in');
-    if(socket === null) return;
+    if (socket === null) return;
     console.log('as');
     myStream.getVideoTracks()[0].enabled = !(myStream.getVideoTracks()[0].enabled);
     socket.emit('toggled', userId, myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
   }
 
-  
+
 
   useEffect(() => {
 
@@ -308,7 +334,7 @@ export default function IDE({ }) {
   }, [socket]);
 
 
-  
+
   const runCode = () => {
     var lang = selected;
     console.log(lang, input);
@@ -393,12 +419,8 @@ export default function IDE({ }) {
     setModal(!modal);
   }
 
-  if(!DocId){
-    return <Redirect to = {`/${uuidV4()}`} />
-  }
-
   return (
-    
+
     <>
       <div className="flex">
 
@@ -490,7 +512,7 @@ export default function IDE({ }) {
                 <canvas id="whiteboard-canvas" className="m-0 border h-full w-full bg-white rounded-xl border-black" />
               </div>
             </div>
-            <RightVideoPanel muteCam={muteCam} muteMic={muteMic}/>
+            <RightVideoPanel muteCam={muteCam} muteMic={muteMic} />
           </div>
         </div>
       </div>
@@ -520,8 +542,8 @@ function Header({ runCode, toggleModal }) {
 }
 
 
-function RightVideoPanel({muteCam, muteMic}) {
-  
+function RightVideoPanel({ muteCam, muteMic }) {
+
   return (
     <div className="flex flex-col items-center px-2 bg-purple-dark shadow-lg">
       <button><img className="h-4 my-2" src={upArrow} alt="scroll up arrow" /></button>
@@ -532,7 +554,7 @@ function RightVideoPanel({muteCam, muteMic}) {
           <img src={muteIcon} alt="mute icon" />
         </button>
         <button className="bg-orange-standard border border-r rounded-full h-8 w-8 p-1.5">
-          <img src={videoIcon}  onClick={muteCam} alt="video icon" />
+          <img src={videoIcon} onClick={muteCam} alt="video icon" />
         </button>
         <button className="bg-orange-standard border border-r rounded-full h-8 w-8 p-1.5">
           <img src={phoneIcon} onClick={muteMic} alt="phone icon" />
