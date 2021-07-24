@@ -36,6 +36,7 @@ export default function IDE({ }) {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [modal, setModal] = useState(false);
+  const [username, setUsername] = useState('smit'); 
   const outputRef = useRef(null);
   const videoGrid = document.getElementById('video-grid');
   const myVideo = document.createElement('video');
@@ -129,6 +130,7 @@ export default function IDE({ }) {
       audio: true
     }).then(stream => {
       addVideoStream(myVideo, stream);
+      
       setMystream(stream);
       peer.on('call', cal => {
         cal.answer(stream);
@@ -140,12 +142,15 @@ export default function IDE({ }) {
       });
 
 
-      socket.on('user-connected', (userId) => {
+      socket.on('user-connected', (userId, username) => {
         const call = peer.call(userId, stream);
+        console.log('user connected : ', username);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
         const video = document.createElement('video');
         call.on('stream', (anotherUserVideoStream) => {
+
+          console.log(anotherUserVideoStream.getAudioTracks());
           addVideoStream(video, anotherUserVideoStream);
-        });
+        });                                                                                                                             
 
         call.on('close', () => {
           video.remove();
@@ -161,11 +166,24 @@ export default function IDE({ }) {
     });
 
     peer.on('open', (id) => {
-      socket.emit('join-room', DocId, id);
+      socket.emit('join-room', DocId, id, username);
     });
 
   }, [socket, DocId, peer]);
 
+  const muteMic = () => {
+    myStream.getAudioTracks()[0].enabled = !(myStream.getAudioTracks()[0].enabled);
+  }
+
+  const muteCam = () => {
+    myStream.getVideoTracks()[0].enabled = !(myStream.getVideoTracks()[0].enabled);
+    console.log(myStream.getVideoTracks()[0].enabled);
+  }
+
+  // useEffect(() => {
+  //   if(socket === null) return;
+  //   socket.emit('toggled', myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
+  // }, [socket, myStream]);
 
   useEffect(() => {
 
@@ -281,14 +299,7 @@ export default function IDE({ }) {
   }, [socket]);
 
 
-  const muteMic = () => {
-    myStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
-  }
-
-  const muteCam = () => {
-    myStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
-  }
-
+  
   const runCode = () => {
     var lang = selected;
     console.log(lang, input);
@@ -458,8 +469,6 @@ export default function IDE({ }) {
                     <button className="color black" >black</button>
                     <button className="color white"> white</button>
                   </div> */}
-                {/* <button onClick={muteMic}>Mute</button>
-                  <button onClick={muteCam}>Video</button> */}
                 <div className="absolute right-10 top-10">
                   <img onClick={toggleModal} src={closeIcon} className="w-6 cursor-pointer" alt="close icon" />
                 </div>
@@ -467,7 +476,7 @@ export default function IDE({ }) {
                 <canvas id="whiteboard-canvas" className="m-0 border h-full w-full bg-white rounded-xl border-black" />
               </div>
             </div>
-            <RightVideoPanel />
+            <RightVideoPanel muteCam={muteCam} muteMic={muteMic}/>
           </div>
         </div>
       </div>
@@ -497,7 +506,8 @@ function Header({ runCode, toggleModal }) {
 }
 
 
-function RightVideoPanel() {
+function RightVideoPanel({muteCam, muteMic}) {
+  
   return (
     <div className="flex flex-col items-center px-2 bg-purple-dark shadow-lg">
       <button><img className="h-4 my-2" src={upArrow} alt="scroll up arrow" /></button>
@@ -508,10 +518,10 @@ function RightVideoPanel() {
           <img src={muteIcon} alt="mute icon" />
         </button>
         <button className="bg-orange-standard border border-r rounded-full h-8 w-8 p-1.5">
-          <img src={videoIcon} alt="video icon" />
+          <img src={videoIcon}  onClick={muteCam} alt="video icon" />
         </button>
         <button className="bg-orange-standard border border-r rounded-full h-8 w-8 p-1.5">
-          <img src={phoneIcon} alt="phone icon" />
+          <img src={phoneIcon} onClick={muteMic} alt="phone icon" />
         </button>
       </div>
     </div>
