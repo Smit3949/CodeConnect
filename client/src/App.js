@@ -58,10 +58,7 @@ function Navigation() {
   return (
     <Router>
       <Switch>
-        <Route path="/" exact>
-          <Redirect to = {`/${uuidV4()}`} />
-        </Route>
-        <Route path="/:id" component={IDE} />
+        <Route path="/:id?" component={IDE} />
       </Switch>
     </Router>
   );

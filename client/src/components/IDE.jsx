@@ -20,6 +20,14 @@ import closeIcon from '../images/icons/close.png';
 import muteIcon from '../images/icons/mute.svg';
 import videoIcon from '../images/icons/video.svg';
 import phoneIcon from '../images/icons/phone.svg';
+import {
+  BrowserRouter as Router,
+  Link,
+  Switch,
+  Route,
+  Redirect
+} from 'react-router-dom';
+import { v4 as uuidV4 } from 'uuid';
 
 
 export default function IDE({ }) {
@@ -385,7 +393,12 @@ export default function IDE({ }) {
     setModal(!modal);
   }
 
+  if(!DocId){
+    return <Redirect to = {`/${uuidV4()}`} />
+  }
+
   return (
+    
     <>
       <div className="flex">
 
