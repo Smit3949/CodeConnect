@@ -68,6 +68,11 @@ io.on('connection', (socket) =>  {
         socket.join(roomId)
         socket.to(roomId).emit('user-connected', userId, userName)
 
+        socket.on('toggled', (userId, video, audio) => {
+            console.log(userId, video, audio);
+            socket.to(roomId).emit('received-toggled-events', userId, video, audio);
+        });
+
         socket.on('disconnect', () => {
             socket.to(roomId).emit('user-disconnected', userId)
         });

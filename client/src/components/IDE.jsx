@@ -142,8 +142,8 @@ export default function IDE({ }) {
         });
       });
 
-
       socket.on('user-connected', (userId, username) => {
+        //dsad
         const call = peer.call(userId, stream);
         console.log('user connected : ', username);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
         const video = document.createElement('video');
@@ -185,6 +185,13 @@ export default function IDE({ }) {
     socket.emit('toggled', userId, myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
   }
 
+  useEffect(() => {
+    if(socket === null) return;
+    console.log(userId);
+    socket.on('received-toggled-events', (userId, video, audio) => {
+      console.log(userId, video, audio);
+    });
+  })
   
 
   useEffect(() => {
@@ -205,6 +212,8 @@ export default function IDE({ }) {
 
     const onColorUpdate = (e) => {
       current.color = e.target.className.split(' ')[1];
+      if(current.color === 'black') current.width = 5;
+      else current.width = 25;
     };
 
     for (let i = 0; i < colors.length; i++) {
@@ -213,12 +222,12 @@ export default function IDE({ }) {
     let drawing = false;
 
 
-    const drawLine = (x0, y0, x1, y1, color, emit) => {
+    const drawLine = (x0, y0, x1, y1, color, width, emit) => {
       context.beginPath();
       context.moveTo(x0, y0);
       context.lineTo(x1, y1);
       context.strokeStyle = color;
-      context.lineWidth = current.width;
+      context.lineWidth = width;
       context.stroke();
       context.closePath();
 
@@ -234,6 +243,7 @@ export default function IDE({ }) {
         x1: x1 / w,
         y1: y1 / h,
         color,
+        width
       });
     };
 
@@ -249,7 +259,7 @@ export default function IDE({ }) {
 
     const onMouseMove = (e) => {
       if (!drawing) { return; }
-      drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, true);
+      drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, current.width, true);
       current.x = e.clientX || e.touches[0].clientX;
       current.y = e.clientY || e.touches[0].clientY;
     };
@@ -258,7 +268,7 @@ export default function IDE({ }) {
 
       if (!drawing) { return; }
       drawing = false;
-      drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, true);
+      drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, current.width, true);
     };
     const throttle = (callback, delay) => {
       let previousCall = new Date().getTime();
@@ -294,7 +304,7 @@ export default function IDE({ }) {
     const onDrawingEvent = (data) => {
       const w = canvas.width;
       const h = canvas.height;
-      drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color);
+      drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color, data.width);
     }
     socket.on('drawing', onDrawingEvent);
   }, [socket]);
@@ -388,7 +398,10 @@ export default function IDE({ }) {
   return (
     <>
       <div className="flex">
-
+      <div ref={colorsRef} className="colors">
+        <button className="color black" >black</button>
+        <button className="color white"> white</button>
+      </div>
         <div className="h-screen flex flex-grow flex-col">
           <Header runCode={runCode} toggleModal={toggleModal} />
           <div className="flex-grow flex">
@@ -466,10 +479,7 @@ export default function IDE({ }) {
 
                 <textarea onChange={(e) => { setOutput(e.target.value) }} value={output} rows="4" cols="50">
                 </textarea> */}
-                {/* <div ref={colorsRef} className="colors">
-                    <button className="color black" >black</button>
-                    <button className="color white"> white</button>
-                  </div> */}
+                
                 <div className="absolute right-10 top-10">
                   <img onClick={toggleModal} src={closeIcon} className="w-6 cursor-pointer" alt="close icon" />
                 </div>
