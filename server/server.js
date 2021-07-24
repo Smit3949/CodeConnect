@@ -64,10 +64,9 @@ io.on('connection', (socket) =>  {
     });
 
 
-    socket.on('join-room', (roomId, userId) => {
-        console.log('user-connected',userId)
+    socket.on('join-room', (roomId, userId, userName)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            => {
         socket.join(roomId)
-        socket.to(roomId).emit('user-connected', userId)
+        socket.to(roomId).emit('user-connected', userId, userName)
 
         socket.on('disconnect', () => {
             socket.to(roomId).emit('user-disconnected', userId)
