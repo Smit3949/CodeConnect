@@ -46,6 +46,7 @@ export default function IDE({ }) {
   const peers = {};
   const canvasRef = useRef(null);
   const colorsRef = useRef(null);
+  const [userId, setUserId] = useState(null);
 
 
 
@@ -166,6 +167,7 @@ export default function IDE({ }) {
     });
 
     peer.on('open', (id) => {
+      setUserId(id);
       socket.emit('join-room', DocId, id, username);
     });
 
@@ -176,14 +178,14 @@ export default function IDE({ }) {
   }
 
   const muteCam = () => {
+    console.log('in');
+    if(socket === null) return;
+    console.log('as');
     myStream.getVideoTracks()[0].enabled = !(myStream.getVideoTracks()[0].enabled);
-    console.log(myStream.getVideoTracks()[0].enabled);
+    socket.emit('toggled', userId, myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
   }
 
-  // useEffect(() => {
-  //   if(socket === null) return;
-  //   socket.emit('toggled', myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
-  // }, [socket, myStream]);
+  
 
   useEffect(() => {
 
@@ -236,7 +238,6 @@ export default function IDE({ }) {
     };
 
 
-    // ---------------- mouse movement --------------------------------------
 
     const onMouseDown = (e) => {
 
