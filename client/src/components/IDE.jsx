@@ -25,9 +25,6 @@ import phoneIcon from '../images/icons/phone.svg';
 export default function IDE({ }) {
   const { id: DocId } = useParams();
   const [socket, setSocket] = useState(null);
-  const [html, setHtml] = useState('');
-  const [css, setCss] = useState('');
-  const [js, setJs] = useState('');
   const [cpp, setcpp] = useState('');
   const [java, setjava] = useState('');
   const [python, setpython] = useState('');
@@ -68,51 +65,44 @@ export default function IDE({ }) {
 
   useEffect(() => {
     if (socket == null) return;
+    socket.emit('get-document', DocId);
     socket.once('load-document', (data) => {
-      console.log(data);
-      setHtml(data.html);
-      setCss(data.css);
-      setJs(data.js);
       setcpp(data.cpp);
       setjava(data.java);
       setpython(data.python);
     });
-
-    socket.emit('get-document', DocId);
 
   }, [socket, DocId]);
 
 
   useEffect(() => {
     if (socket === null) return;
-    const updateContent = (delta) => {
-      setHtml(delta.html);
-      setCss(delta.css);
-      setJs(delta.js);
-      setcpp(delta.cpp);
-      setjava(delta.java);
-      setpython(delta.python);
-    };
-    socket.on('receive-changes', updateContent);
-    return () => {
-      socket.off('receive-changes', updateContent);
+    var updateC = (delta) => {
+     setpython(delta.python);
+     setjava(delta.java);
+     setcpp(delta.cpp); 
     }
-  }, [socket, html, css, js, cpp, java, python]);
+    socket.on('receive-changes', updateC);
+    return () => {
+      socket.off('receive-changes', updateC);
+    }
+  }, [socket, cpp, java, python]);
 
   useEffect(() => {
     if (socket === null) return;
     var data = {
-      'html': html,
-      'css': css,
-      'js': js,
       'cpp': cpp,
       'java': java,
       'python': python
     };
 
-    socket.emit('save-document', data);
-    socket.emit('changes', data);
-  }, [socket, html, css, js, cpp, java, python]);
+    var savetodb = setTimeout(() => {socket.emit('save-document', data); socket.emit('changes', data);}, 2000);
+    
+    return () =>{
+      clearTimeout(savetodb);
+    };
+    
+  }, [socket, cpp, java, python]);
 
 
   function addVideoStream(video, stream) {
@@ -143,7 +133,6 @@ export default function IDE({ }) {
       });
 
       socket.on('user-connected', (userId, username) => {
-        //dsad
         const call = peer.call(userId, stream);
         console.log('user connected : ', username);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
         const video = document.createElement('video');
@@ -175,19 +164,17 @@ export default function IDE({ }) {
 
   const muteMic = () => {
     myStream.getAudioTracks()[0].enabled = !(myStream.getAudioTracks()[0].enabled);
+    socket.emit('toggled', userId, myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
   }
 
   const muteCam = () => {
-    console.log('in');
     if(socket === null) return;
-    console.log('as');
     myStream.getVideoTracks()[0].enabled = !(myStream.getVideoTracks()[0].enabled);
     socket.emit('toggled', userId, myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
   }
 
   useEffect(() => {
     if(socket === null) return;
-    console.log(userId);
     socket.on('received-toggled-events', (userId, video, audio) => {
       console.log(userId, video, audio);
     });
