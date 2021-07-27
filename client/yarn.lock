@@ -1226,6 +1226,21 @@
   dependencies:
     "@hapi/hoek" "^8.3.0"
 
+"@iconify/icons-bi@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@iconify/icons-bi/-/icons-bi-1.1.5.tgz#a0222facbbcb22489c6faf7648e3662b732605d1"
+  integrity sha512-aDxe8WGt9KovnzzBSi5m4WR/OQ6bjx3x85jxhiCM/ylTZtPwMGUZyuNY7hU7ECV8QFci/IMUNHRmz3epm88/+w==
+
+"@iconify/icons-fluent@^1.1.22":
+  version "1.1.22"
+  resolved "https://registry.yarnpkg.com/@iconify/icons-fluent/-/icons-fluent-1.1.22.tgz#c439023439bf3d5b43258ef4d7b6472aa46b5cd4"
+  integrity sha512-q9YTpD358jhRoJRFFHjI6Oah8qhkhMyjpid/hXQY7kJ1bNcz8wrqwtYjr0oUJ8PFXzzNEuIAYDCbzbsEEpD/yw==
+
+"@iconify/react@^1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@iconify/react/-/react-1.1.4.tgz#c778eddbaf196e55705d0bedff00d039dc1de8d3"
+  integrity sha512-oxq8IMOq8q3nKGiDHbQPC8FcFuBsKve68JWBo140d5LRnj0bv5TB/FE/y01ZSvEZ7PlI2HIrnb2qivPN8kTDgw==
+
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
@@ -5886,6 +5901,11 @@ immer@8.0.1:
   resolved "https://registry.yarnpkg.com/immer/-/immer-8.0.1.tgz#9c73db683e2b3975c424fb0572af5889877ae656"
   integrity sha512-aqXhGP7//Gui2+UrEtvxZxSquQVXTpZ7KDxfCcKAF3Vysvw0CViVaW9RZ1j1xlIYqaaaipBoqdqeibkc18PNvA==
 
+immer@^9.0.3:
+  version "9.0.5"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.5.tgz#a7154f34fe7064f15f00554cc94c66cc0bf453ec"
+  integrity sha512-2WuIehr2y4lmYz9gaQzetPR2ECniCifk4ORaQbU3g5EalLt+0IVTosEPJ5BoYl/75ky2mivzdRzV8wWgQGOSYQ==
+
 import-cwd@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/import-cwd/-/import-cwd-2.1.0.tgz#aa6cf36e722761285cb371ec6519f53e2435b0a9"
@@ -9452,6 +9472,16 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
+react-dom@^16.6.1:
+  version "16.14.0"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.14.0.tgz#7ad838ec29a777fb3c75c3a190f661cf92ab8b89"
+  integrity sha512-1gCeQXDLoIqMgqD3IO2Ah9bnf0w9kzhwN5q4FGnHZ67hBm9yePzB5JJAIQCc8x3pFnNlwFq4RidZggNAAkzWWw==
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
+    prop-types "^15.6.2"
+    scheduler "^0.19.1"
+
 react-dom@^17.0.2:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-17.0.2.tgz#ecffb6845e3ad8dbfcdc498f0d0a939736502c23"
@@ -9591,6 +9621,31 @@ react-scripts@4.0.3:
     workbox-webpack-plugin "5.1.4"
   optionalDependencies:
     fsevents "^2.1.3"
+
+react-sketch-canvas@^5.3.4:
+  version "5.3.4"
+  resolved "https://registry.yarnpkg.com/react-sketch-canvas/-/react-sketch-canvas-5.3.4.tgz#3a530ad9e9bbefd285b0112bf13bf0aa6a1367c4"
+  integrity sha512-Yo9NqKsgmKUQIas32HuNRcQ18bf/k9k3oiPfTcR8Fhb3WnRJ4k1I676zo9wfURPEZjjV8riNrsLC0VD9Q+5Qzg==
+  dependencies:
+    immer "^9.0.3"
+
+react-sketch@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/react-sketch/-/react-sketch-0.5.1.tgz#71a4f619cade9495b6baead4e7a4741952717579"
+  integrity sha512-a0BPc6z/Ec/7KN4KL/HGLfAhDfLyaBN8GDvILfBZVX74PnhWvJocofc/cHSCvtNtEmGSdmJPjrewfAUXKo78pA==
+  dependencies:
+    prop-types "^15.6.2"
+    react "^16.6.1"
+    react-dom "^16.6.1"
+
+react@^16.6.1:
+  version "16.14.0"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.14.0.tgz#94d776ddd0aaa37da3eda8fc5b6b18a4c9a3114d"
+  integrity sha512-0X2CImDkJGApiAlcf0ODKIneSwBPhqJawOa5wCtKbu7ZECrmS26NvtSILynQ66cgkT/RJ4LidJOc3bUESwmU8g==
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
+    prop-types "^15.6.2"
 
 react@^17.0.2:
   version "17.0.2"
@@ -10132,6 +10187,14 @@ saxes@^5.0.0:
   integrity sha512-5LBh1Tls8c9xgGjw3QrMwETmTMVk0oFgvrFSvWx62llR2hcEInrKNZ2GZCCuuy2lvWrdl5jhbpeqc5hRYKFOcw==
   dependencies:
     xmlchars "^2.2.0"
+
+scheduler@^0.19.1:
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.19.1.tgz#4f3e2ed2c1a7d65681f4c854fa8c5a1ccb40f196"
+  integrity sha512-n/zwRWRYSUj0/3g/otKDRPMh6qv2SYMWNq85IEa8iZyAv8od9zDYpGSnpBEjNgcMNq6Scbu5KfIPxNF72R/2EA==
+  dependencies:
+    loose-envify "^1.1.0"
+    object-assign "^4.1.1"
 
 scheduler@^0.20.2:
   version "0.20.2"

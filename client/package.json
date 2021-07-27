@@ -4,6 +4,9 @@
   "private": true,
   "dependencies": {
     "@craco/craco": "^6.2.0",
+    "@iconify/icons-bi": "^1.1.5",
+    "@iconify/icons-fluent": "^1.1.22",
+    "@iconify/react": "^1.1.4",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -20,6 +23,8 @@
     "react-resizable": "^3.0.4",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
+    "react-sketch": "^0.5.1",
+    "react-sketch-canvas": "^5.3.4",
     "socket.io-client": "^4.1.2",
     "uuid": "^8.3.2",
     "web-vitals": "^1.0.1"

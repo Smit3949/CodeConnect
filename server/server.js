@@ -47,10 +47,15 @@ io.on('connection', (socket) =>  {
             socket.broadcast.to(DocId).emit("receive-changes", delta);
         });
 
+        socket.on('drawing', (data) => {
+            console.log(data);
+            socket.broadcast.emit('drawing', data)
+        });
 
         socket.on('save-document', async (data) => {
-            Doc.findByIdAndUpdate({'_id': DocId}, { 'html': data.html, 'css': data.css, 'js': data.js, 'python': data.python, 'cpp': data.cpp, 'java': data.java}).then((d) => {
-                console.log(d);
+            console.log(data);
+            Doc.findByIdAndUpdate({'_id': DocId}, { 'html': data.html, 'css': data.css, 'js': data.js, 'python': data.python, 'cpp': data.cpp, 'java': data.java }).then((d) => {
+               // console.log(d);
             })  
             .catch(err => { 
                 console.error(err);
@@ -59,14 +64,19 @@ io.on('connection', (socket) =>  {
     });
 
 
-    socket.on('join-room', (roomId, userId) => {
+    socket.on('join-room', (roomId, userId, userName)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            => {
         socket.join(roomId)
-        socket.to(roomId).emit('user-connected', userId)
+        socket.to(roomId).emit('user-connected', userId, userName)
+
+        socket.on('toggled', (userId, video, audio) => {
+            console.log(userId, video, audio);
+            socket.to(roomId).emit('received-toggled-events', userId, video, audio);
+        });
 
         socket.on('disconnect', () => {
-        socket.to(roomId).emit('user-disconnected', userId)
-        })
-    })
+            socket.to(roomId).emit('user-disconnected', userId)
+        });
+    });
     console.log("connected");
 });
 

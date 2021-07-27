@@ -1,4 +1,4 @@
-import IDE from './components/IDE';
+import IDE from './components/IDE.jsx';
 
 import {
   BrowserRouter as Router,

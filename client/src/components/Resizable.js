@@ -56,19 +56,21 @@ export default class ResizablePanels extends React.Component {
         const rest = this.props.children.slice(1)
         return (
             <div className="panel-container" onMouseUp={() => this.stopResize()}>
-                <div className="panel" style={{ width: `calc(100% - ${this.state.panels[1]}px)` }}>
+                <div className="panel">
                     {this.props.children[0]}
                 </div>
                 {[].concat(...rest.map((child, i) => {
-                    return [
-                        <div onMouseDown={(e) => this.startResize(e, i + 1)}
-                            key={"resizer_" + i}
-                            style={this.state.currentPanel === i + 1 ? { left: this.state.delta } : {}}
-                            className="resizer"></div>,
-                        <div key={"panel_" + i} className="panel" style={{ width: this.state.panels[i + 1] }}>
-                            {child}
+                    return (
+                        <div className="flex flex-col">
+                            <div onMouseDown={(e) => this.startResize(e, i + 1)}
+                                key={"resizer_" + i}
+                                style={this.state.currentPanel === i + 1 ? { left: this.state.delta } : {}}
+                                className="resizer"></div>
+                            <div key={"panel_" + i} className="panel" >
+                                {child}
+                            </div>
                         </div>
-                    ]
+                    )
                 }))}
             </div>
         )
