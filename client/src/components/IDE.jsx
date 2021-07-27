@@ -133,6 +133,7 @@ export default function IDE({ }) {
       peer.on('call', cal => {
         cal.answer(stream);
         const video = document.createElement('video');
+        video.className = "rounded mb-4"
 
         cal.on('stream', (anotherUserVideoStream) => {
           addVideoStream(video, anotherUserVideoStream);
@@ -414,7 +415,7 @@ export default function IDE({ }) {
           <div className="flex-grow flex">
             <div id="editor" className="flex-grow flex flex-col">
               <FileTabs />
-              <div className="flex-grow overflow-y-auto">
+              <div className="flex-grow overflow-y-auto" style={{ height: "calc(100vh - 310px)" }}>
                 {
                   selected === 'CPP' &&
                   <section className="playground">
@@ -482,7 +483,7 @@ export default function IDE({ }) {
               </div>
               <div className={`flex-grow ${modal ? "top-0" : " top-full"} duration-300 left-0 p-4 backdrop-filter backdrop-blur-sm absolute z-50 w-screen h-screen`}>
                 <div ref={colorsRef} className="colors absolute select-none left-10 top-10">
-                  <button  ><Icon icon={penFill} className="color black" height="28" /></button>
+                  <button  ><Icon icon={penFill} className="color black text-orange-standard" height="28" /></button>
                   <button className="ml-4"><Icon icon={eraser24Filled} className="color white" height="30" /></button>
                 </div>
                 <div className="absolute right-10 select-none top-10">
@@ -549,11 +550,11 @@ function Header({ runCode, toggleModal }) {
 function RightVideoPanel({ muteCam, muteMic }) {
 
   return (
-    <div className="flex flex-col items-center px-2 bg-purple-dark shadow-lg">
-      <button><img className="h-4 my-2" src={upArrow} alt="scroll up arrow" /></button>
-      <div className="flex flex-col items-center justify-center" id="video-grid"></div>
-      <button><img className="h-4 my-2 transform rotate-180" src={upArrow} alt="scroll down arrow" /></button>
-      <div className="flex items-center w-full justify-around mt-2">
+    <div style={{ height: "calc(100vh - 50px)" }} className="flex flex-col items-center relative p-2 bg-purple-dark shadow-lg">
+      {/* <button><img className="h-4 my-2" src={upArrow} alt="scroll up arrow" /></button> */}
+      <div className="flex flex-col items-center overflow-y-auto justify-center pb-10" id="video-grid"></div>
+      {/* <button><img className="h-4 my-2 transform rotate-180" src={upArrow} alt="scroll down arrow" /></button> */}
+      <div className="flex items-center backdrop-filter backdrop-blur absolute left-0 bottom-0 pt-2 rounded-lg pb-4 w-full justify-around mt-2">
         <button className="bg-orange-standard border border-r rounded-full h-8 w-8 p-1.5">
           <img src={muteIcon} alt="mute icon" />
         </button>
