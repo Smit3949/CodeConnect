@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@auth0/auth0-react": "^1.6.0",
     "@craco/craco": "^6.2.0",
     "@iconify/icons-bi": "^1.1.5",
     "@iconify/icons-fluent": "^1.1.22",

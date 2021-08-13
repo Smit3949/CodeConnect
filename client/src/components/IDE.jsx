@@ -9,6 +9,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/clike/clike';
 import 'codemirror/mode/python/python';
 import { useParams } from 'react-router';
+import axios from 'axios';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import Peer from 'peerjs';
 import runIcon from '../images/icons/run.svg';
@@ -21,6 +22,9 @@ import eraser24Filled from '@iconify/icons-fluent/eraser-24-filled';
 import penFill from '@iconify/icons-bi/pen-fill';
 import whiteboard24Regular from '@iconify/icons-fluent/whiteboard-24-regular';
 import 'react-circular-progressbar/dist/styles.css';
+import Logout from './Auth/Logout';
+import Login from './Auth/Login';
+import { User } from './Auth/User';
 
 
 export default function IDE() {
@@ -404,19 +408,14 @@ export default function IDE() {
 
   };
 
-  const getOutput = async (link) => {
-    await fetch(link).then((data) => {
-      data.json().then((res) => {
-        setPercentageStage(100)
-        setProcessing(false);
-        setOutput(res);
-      }).catch(e => {
-        setProcessing(false);
-      })
+  const getOutput = (link) => {
+    axios.get(link).then((res) => {
+      setPercentageStage(100)
+      setProcessing(false);
+      setOutput(res.data);
+    }).catch((err) => {
+      console.log(err);
     })
-      .catch(e => {
-        setProcessing(false);
-      })
   }
 
   const toggleModal = () => {
@@ -592,9 +591,9 @@ function Header({ runCode, toggleModal }) {
           <img className="h-3" src={runIcon} alt="run code icon" />
           <span className="ml-2">Run</span>
         </button>
-        <button className="bg-orange-standard border border-r rounded px-3 py-1 ml-2">
-          Login/Register
-        </button>
+        <Login />
+        <Logout />
+        <User />
       </div>
     </div>
   )
