@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
@@ -50,7 +50,7 @@ export default function IDE() {
   const [textEditor, setTextEditor] = useState('input');
   const [processing, setProcessing] = useState(false);
   const [percentageStage, setPercentageStage] = useState(0);
-
+  const [myvideoon, setMyvideoon] = useState(true);
 
 
   useEffect(() => {
@@ -59,7 +59,8 @@ export default function IDE() {
     const peer = new Peer(undefined, {
       host: 'localhost',
       port: 9000,
-      path: '/'
+      path: '/',
+      metadata: { userName: 'name goes here' }
     });
     setPeer(peer);
 
@@ -129,16 +130,82 @@ export default function IDE() {
       audio: true
     }).then(stream => {
       addVideoStream(myVideo, stream);
-
+      setMyvideoon(true);
       setMystream(stream);
-      peer.on('call', cal => {
-        cal.answer(stream);
+      peer.on('call', call => {
+        console.log(call);
+        call.answer(stream);
+        const video = document.createElement('video');
+        video.className = "rounded mb-4";
+        call.on('stream', (anotherUserVideoStream) => {
+          addVideoStream(video, anotherUserVideoStream);
+        });
+        
+        call.on('close', () => {
+          video.remove();
+        });
+        console.log(call);
+        peers[call.peer] = call;
+      });
+
+      socket.on('user-connected', (userId, username) => {
+        const call = peer.call(userId, stream);
+        call.metadata.username = username;
+        console.log('user connected : ', username);
+        const video = document.createElement('video')
+        video.id = userId;
+        video.username = username;
+        call.on('stream', (anotherUserVideoStream) => {
+
+          console.log(anotherUserVideoStream.getAudioTracks());
+          addVideoStream(video, anotherUserVideoStream, username);
+        });
+
+        call.on('close', () => {
+          video.remove();
+        });
+        peers[userId] = call;
+      });
+
+
+    });
+
+    socket.on('user-disconnected', userId => {
+      if (peers[userId]) peers[userId].close();
+    });
+
+    peer.on('open', (id) => {
+      setUserId(id);
+      socket.emit('join-room', DocId, id, username);
+    });
+    // eslint-disable-next-line
+  }, [socket, DocId, peer]);
+
+  const addVideo = useCallback(() => {
+    if (socket == null) return;
+
+    navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    }).then(stream => {
+      addVideoStream(myVideo, stream);
+      setMyvideoon(true);
+      setMystream(stream);
+      replaceStream(stream);
+      peer.on('call', call => {
+        call.answer(stream);
         const video = document.createElement('video');
         video.className = "rounded mb-4"
 
-        cal.on('stream', (anotherUserVideoStream) => {
+        call.on('stream', (anotherUserVideoStream) => {
           addVideoStream(video, anotherUserVideoStream);
         });
+        
+        call.on('close', () => {
+          video.remove();
+        });
+        console.log(call);
+        peers[call.peer] = call;
       });
 
       socket.on('user-connected', (userId, username) => {
@@ -171,6 +238,8 @@ export default function IDE() {
     });
     // eslint-disable-next-line
   }, [socket, DocId, peer]);
+  
+
 
   const muteMic = () => {
     myStream.getAudioTracks()[0].enabled = !(myStream.getAudioTracks()[0].enabled);
@@ -178,10 +247,44 @@ export default function IDE() {
   }
 
   const muteCam = () => {
+    
     if (socket === null) return;
-    myStream.getVideoTracks()[0].enabled = !(myStream.getVideoTracks()[0].enabled);
-    // toggle webcam tracks
-    socket.emit('toggled', userId, myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
+    if (myStream && myvideoon) {
+      myStream.getVideoTracks()[0].enabled = false;
+      myStream.getVideoTracks()[0].stop();
+      // forEach((track) => {
+      //   if (track.kind === 'video') {
+      //     track.stop();
+      //   }
+      // });
+      console.log(myStream.getVideoTracks()[0].enabled);
+      setMyvideoon(false);
+    }
+    else {
+      addVideo();
+      setMyvideoon(true);
+    }
+    // myStream.getVideoTracks()[0].enabled = !(myStream.getVideoTracks()[0].enabled);
+    // // toggle webcam tracks
+    // socket.emit('toggled', userId, myStream.getVideoTracks()[0].enabled, myStream.getAudioTracks()[0].enabled);
+  }
+
+
+  const replaceStream = (mediaStream) => {
+        Object.values(peers).map((peer) => {
+            peer.peerConnection?.getSenders().map((sender) => {
+                if(sender.track.kind === "audio") {
+                    if(mediaStream.getAudioTracks().length > 0){
+                        sender.replaceTrack(mediaStream.getAudioTracks()[0]);
+                    }
+                }
+                if(sender.track.kind === "video") {
+                    if(mediaStream.getVideoTracks().length > 0){
+                        sender.replaceTrack(mediaStream.getVideoTracks()[0]);
+                    }
+                }
+            });
+        })
   }
 
   useEffect(() => {
